@@ -1,0 +1,33 @@
+# Temporary Microsoft Office files
+~$*
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
+# macOS system files
+.DS_Store
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Common build outputs
+__pycache__/
+*.py[cod]
+node_modules/
+dist/
+build/
+target/
