@@ -8,4 +8,4 @@
 - **Justification/advantages:** relational integrity and mature transaction/backup ecosystem; compatible managed offerings across target clouds.
 - **Trade-offs/consequences:** scaling writes and failover require operational design; managed versions/extensions differ; local compose does not imply production-ready HA.
 - **Reconsider when:** workload or access patterns demonstrate materially better fit elsewhere.
-- **Validation/dependencies:** schema/migration/restore/concurrency tests before use. No schema or DB wiring implemented yet.
+- **Validation/dependencies:** Phase 2 adds PostgreSQL wiring, Flyway identity schema and Testcontainers integration coverage. Container execution still requires a Docker-capable test host; production restore/concurrency validation remains future work.

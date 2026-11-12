@@ -1,6 +1,13 @@
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: ${APP_SECURITY_COOKIE_SECURE:false}
+        same-site: lax
 spring:
   application:
     name: cloudresilience-api
@@ -8,6 +15,25 @@ spring:
     timeout-per-shutdown-phase: 20s
   jackson:
     default-property-inclusion: non_null
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cloudresilience?connectTimeout=5&socketTimeout=10}
+    username: ${SPRING_DATASOURCE_USERNAME:cloudresilience}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      connection-timeout: 5000
+      validation-timeout: 3000
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    validate-on-migrate: true
 management:
   endpoints:
     web:
@@ -18,6 +44,14 @@ management:
       show-details: never
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
   info:
     env:
       enabled: false

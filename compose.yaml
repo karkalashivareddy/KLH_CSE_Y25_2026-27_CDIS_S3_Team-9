@@ -14,15 +14,17 @@ services:
     build: ./apps/api
     environment:
       SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cloudresilience}?connectTimeout=5&socketTimeout=10
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cloudresilience}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      APP_SECURITY_COOKIE_SECURE: ${APP_SECURITY_COOKIE_SECURE:-false}
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
       interval: 15s
       timeout: 3s
       retries: 5

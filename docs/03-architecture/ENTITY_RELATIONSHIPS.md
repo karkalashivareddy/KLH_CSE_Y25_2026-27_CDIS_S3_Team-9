@@ -1,6 +1,6 @@
 # Entity relationships
 
-**Purpose/scope:** conceptual relationship map only; no deployed schema. See [database design](DATABASE_DESIGN.md).
+**Purpose/scope:** identity relationship is implemented; remaining commerce model is conceptual. See [database design](DATABASE_DESIGN.md) and [identity schema](IDENTITY_SCHEMA.md).
 
 ```mermaid
 erDiagram

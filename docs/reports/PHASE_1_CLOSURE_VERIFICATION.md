@@ -41,3 +41,7 @@
 ## Final recommendation
 
 Accept the documented local Phase 1 foundation for review and Phase 2 planning, with G7 and hosted portions of G8/G10 still open. Do not describe Phase 1 as fully runtime-validated or production-ready until those blocked gates are closed.
+
+## Post-push hosted CI addendum
+
+After the original verification, commit `c89778217d2d73c878843bce8ea602518bf50d8a` was pushed directly to `main` (no pull request was created). Hosted CI passed on both the feature branch (run [43220733151](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/43220733151)) and `main` (run [43220910380](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/43220910380)); web, API, secret-scan and Maven OSV jobs all succeeded. A separate Dependabot-generated update run failed while attempting an npm update; it was not the CI workflow and did not change the commit. Docker runtime remains blocked on the local machine.

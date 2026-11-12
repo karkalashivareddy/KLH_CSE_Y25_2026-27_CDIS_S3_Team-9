@@ -40,7 +40,7 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
-      - run: mvn -B -ntp -f apps/api/pom.xml verify
+      - run: mvn -B -ntp -f apps/api/pom.xml verify -DrunIntegrationTests=true
 
   secret-scan:
     name: Secret scan

@@ -12,4 +12,4 @@
 8. **Resilience:** dependency outage, retry/idempotency, backup restore, timed recovery, rollback and evidence.
 9. **Infrastructure:** Compose validation/health; later Terraform fmt/validate/plan policy without provisioning.
 
-Phase 1 scope: web unit test; API MockMvc tests; lint/typecheck/build/package; Compose config/service check if daemon works. Testcontainers integration is deferred until Maven and Docker daemon are available. Risks include environment-dependent Docker/network availability. Validation evidence belongs in completion report/CI.
+Phase 2: run `mvn -B -ntp -f apps/api/pom.xml clean verify` for independent API unit/MockMvc checks. PostgreSQL/Flyway/session integration tests are explicitly opt-in with `-DrunIntegrationTests=true`; CI enables them on Docker-capable GitHub runners. Without Docker they must be reported BLOCKED/SKIPPED, never as database integration PASS. The frontend suite covers registration, sign-in, session state, logout and access denial. Keep environment-dependent Docker/network results in the implementation report.

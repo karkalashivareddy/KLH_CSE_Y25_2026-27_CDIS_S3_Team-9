@@ -15,6 +15,6 @@ public class HealthController {
 
     @GetMapping("/info")
     public Map<String, String> info() {
-        return Map.of("application", "cloudresilience-api", "version", "0.1.0", "phase", "foundation");
+        return Map.of("application", "cloudresilience-api", "version", "0.2.0", "phase", "identity-data");
     }
 }

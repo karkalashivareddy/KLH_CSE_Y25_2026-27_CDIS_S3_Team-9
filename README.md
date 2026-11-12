@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 1 foundations in progress.** This repository is being established on a feature branch. Architecture and cloud deployments described as target/future are not deployed. No live cloud telemetry or production e-commerce operations are claimed.
+> **Status: Phase 2 identity/data foundation locally verified.** PostgreSQL persistence, Flyway migrations, session authentication and frontend integration pass local Docker-backed checks. Hosted Phase 2 CI has not run; cloud deployment and production e-commerce operations are not claimed.
 
 ## Product and target architecture
 
@@ -14,14 +14,15 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 
 | Capability | State |
 |---|---|
-| Repository audit and engineering foundations | In progress |
-| Web UI foundation | In progress |
-| API health and metadata foundation | In progress |
-| Local PostgreSQL/Redis Compose environment | Planned until validated |
+| Repository and Phase 1 engineering foundations | Implemented; hosted CI passed on `main` |
+| Web foundation and customer authentication UI | Implemented locally; frontend checks pass |
+| API health, registration, sessions and authorization | Implemented; unit and PostgreSQL Testcontainers integration tests pass locally |
+| PostgreSQL schema and Flyway migration | Implemented and verified against PostgreSQL 17.7 locally |
+| Redis integration | Not implemented; service is available in Compose but unused |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Store, payments, administration, recovery automation | Planned; not implemented |
 
-See [Phase 1 report](docs/reports/PHASE_1_COMPLETION_REPORT.md) for verified status and [handoff](docs/reports/PHASE_1_HANDOFF.md) for next steps.
+See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), and [authentication/security design](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
 
 ## Quick start
 
@@ -55,6 +56,9 @@ tests/                    Cross-application tests (as introduced)
 - [System architecture](docs/03-architecture/SYSTEM_ARCHITECTURE.md)
 - [Architecture decisions](docs/04-architecture-decisions/)
 - [Security and threat model](docs/05-security/SECURITY_ARCHITECTURE.md)
+- [Authentication and sessions](docs/05-security/AUTHENTICATION_AND_SESSIONS.md)
+- [Identity schema](docs/03-architecture/IDENTITY_SCHEMA.md)
+- [API endpoint reference](docs/10-deployment/API_ENDPOINTS.md)
 - [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
 - [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)
 - [Team workflow](docs/11-team-workflow/BRANCHING_STRATEGY.md)
@@ -71,7 +75,7 @@ Responsibilities are collaborative; see [team responsibilities](docs/11-team-wor
 
 ## Engineering and security
 
-Use feature branches and pull requests. Never commit credentials. `.env` is ignored; `.env.example` contains non-secret local defaults only. No cloud resource creation, paid service, GitHub settings change, push, or merge is part of Phase 1. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [cost policy](docs/08-finops/COST_MANAGEMENT_STRATEGY.md).
+Use feature branches and pull requests. Never commit credentials. `.env` is ignored; `.env.example` contains local-only defaults and is not suitable for deployment. No cloud resources, paid services, credentials, or deployment have been created. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [cost policy](docs/08-finops/COST_MANAGEMENT_STRATEGY.md).
 
 ## License
 
