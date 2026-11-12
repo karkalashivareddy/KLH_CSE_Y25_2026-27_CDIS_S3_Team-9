@@ -13,6 +13,20 @@ Base path: `/api/v1`. OpenAPI JSON is available at `/v3/api-docs`; local Swagger
 | `GET /api/v1/auth/me` | Authenticated | 200; current profile and roles; 401 otherwise |
 | `GET /api/v1/admin/access-check` | ADMIN | 200; demonstration authorization result; 401/403 otherwise |
 | `GET /actuator/health/readiness` | Public | DB-aware readiness; health details are hidden |
+| `GET /api/v1/categories[/{id}]` | Public | Active categories only |
+| `GET /api/v1/products?page=0&size=20&sort=name&direction=asc&categoryId=&q=` | Public | Active products, optional filter/search, DB pagination; size <= 100 |
+| `GET /api/v1/products/{id}` | Public | Active product detail with derived availability |
+| `GET /api/v1/products/{id}/availability` | Public | Derived quantity on hand minus reserved |
+| `POST /api/v1/admin/categories`, `PUT /api/v1/admin/categories/{id}` | ADMIN + CSRF | Create/update flat categories |
+| `POST /api/v1/admin/products`, `PUT /api/v1/admin/products/{id}` | ADMIN + CSRF | Create/update products; creation starts DRAFT |
+| `PATCH /api/v1/admin/products/{id}/status` | ADMIN + CSRF | Activate/archive product lifecycle status |
+| `POST /api/v1/admin/inventory/{productId}` | ADMIN + CSRF | Initialize stock once; append initial movement |
+| `GET /api/v1/admin/inventory[/{productId}]` | ADMIN | Paginated stock list or stock plus latest 200 movements |
+| `POST /api/v1/admin/inventory/{productId}/adjustments` | ADMIN + CSRF | Signed non-zero `delta`, required reason; cannot reduce below reserved |
+| `POST /api/v1/admin/inventory/{productId}/reservations` | ADMIN + CSRF | Positive quantity; serialized check-and-reserve; returns reservation ID |
+| `POST /api/v1/admin/inventory/{productId}/reservations/{reservationId}/release` | ADMIN + CSRF | Release a RESERVED record once |
+
+Catalog product pages use `content`, `page`, `size`, `totalElements`, and `totalPages`. Sort fields are allowlisted (`name`, `sku`, `price`, `createdAt`); direction is `asc`/`desc`, with ID tie-breaking. Search is case-insensitive name/SKU substring matching. Inventory availability is derived; customers cannot mutate inventory or reservations. Mutation errors use the common error envelope: 400 validation, 401 unauthenticated, 403 non-admin, 404 unknown/unpublished resources, 409 uniqueness/lifecycle/insufficient-stock conflicts.
 
 Registration JSON:
 

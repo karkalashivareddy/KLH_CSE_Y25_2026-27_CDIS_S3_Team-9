@@ -3,11 +3,13 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-r
 import { ApiError, checkAdminAccess, getApiHealth, type ApiHealth } from './api'
 import { AuthProvider } from './auth'
 import { useAuth } from './auth-context'
+import { AdminCatalogPage, CatalogPage, ProductDetailPage } from './catalog'
 
 const links = [
   { href: '/', label: 'Overview', icon: '◫' },
   { href: '/architecture', label: 'Architecture', icon: '⌘' },
   { href: '/recovery', label: 'Recovery planning', icon: '↗' },
+  { href: '/catalog', label: 'Product catalog', icon: '▦' },
 ]
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -37,7 +39,7 @@ function Shell({ children }: { children: ReactNode }) {
       <nav aria-label="Main navigation">{links.map((item) => <Link key={item.href} className={`nav-link ${location.pathname === item.href ? 'active' : ''}`} to={item.href}><span aria-hidden="true">{item.icon}</span>{item.label}</Link>)}</nav>
       <p className="nav-caption auth-nav-caption">ACCOUNT</p>
       <nav aria-label="Account navigation">
-         {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link><Link className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`} to="/admin"><span aria-hidden="true">⌑</span>Admin</Link><button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
+         {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link>{user.roles.includes('ADMIN')&&<Link className={`nav-link ${location.pathname.startsWith('/admin') ? 'active' : ''}`} to="/admin/catalog"><span aria-hidden="true">⌑</span>Admin catalog</Link>}<button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
       </nav>
       {logoutError && <p className="nav-error" role="alert">{logoutError}</p>}
       <div className="sidebar-note"><span className="note-dot" />Phase 2 foundation<br /><small>Local development</small></div>
@@ -151,6 +153,9 @@ export default function App() {
     <Route path="/" element={<Overview />} />
     <Route path="/architecture" element={<InformationPage title="Architecture" copy="The target architecture and design decisions are maintained in the repository documentation." />} />
      <Route path="/recovery" element={<InformationPage title="Recovery planning" copy="Recovery objectives and workflows are being defined; no recovery automation is available." />} />
+    <Route path="/catalog" element={<CatalogPage />} />
+    <Route path="/products/:id" element={<ProductDetailPage />} />
+    <Route path="/admin/catalog" element={<ProtectedRoute requiredRole="ADMIN"><AdminCatalogPage /></ProtectedRoute>} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
