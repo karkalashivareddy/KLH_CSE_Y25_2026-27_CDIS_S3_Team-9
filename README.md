@@ -1,171 +1,78 @@
-# CDIS-KLH-Y25-Project
+# CloudResilience
 
-![Course](https://img.shields.io/badge/Course-Cloud%20Infrastructure%20%26%20Services-0A66C2)
-![Program](https://img.shields.io/badge/Program-B.Tech%20CSE-1F6FEB)
-![Section](https://img.shields.io/badge/Section-3-8250DF)
-![Academic Year](https://img.shields.io/badge/Academic%20Year-2026-2EA043)
-![Status](https://img.shields.io/badge/Status-Project%20Selection-orange)
+**A secure, cost-conscious e-commerce platform and cloud resilience engineering project.**
 
-Official project repository for the **Cloud Infrastructure and Services (CDIS)** course. This workspace will host the complete project lifecycle — from problem definition and requirement analysis to design, implementation, testing, documentation, and the final presentation.
+Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Current Status:** The team has been formed and the repository has been created. The project title and scope are **yet to be finalized**, and this README will be updated as soon as the project is approved.
+> **Status: Phase 1 foundations in progress.** This repository is being established on a feature branch. Architecture and cloud deployments described as target/future are not deployed. No live cloud telemetry or production e-commerce operations are claimed.
 
----
+## Product and target architecture
 
-## Course Details
+CloudResilience is intended to demonstrate product foundations and cloud engineering through a modular Java/Spring API, React/TypeScript web app, PostgreSQL, Redis, containers, infrastructure as code, observability, and tested recovery workflows. AWS is the proposed primary cloud; Azure and GCP are comparison/portability targets. The initial implementation is deliberately a modular monolith with future independently deployable workers—not a collection of premature microservices.
 
-| Field | Details |
-| :--- | :--- |
-| **Course** | Cloud Infrastructure and Services (CDIS) |
-| **Course Code** | 25CS2206E |
-| **Program** | B.Tech. Computer Science and Engineering (CSE) |
-| **Trimester** | 5 |
-| **Section** | 3 |
-| **Academic Year** | 2026 |
-| **Department** | Department of CSE |
-| **Institution** | KLH |
+## Current implementation
 
----
+| Capability | State |
+|---|---|
+| Repository audit and engineering foundations | In progress |
+| Web UI foundation | In progress |
+| API health and metadata foundation | In progress |
+| Local PostgreSQL/Redis Compose environment | Planned until validated |
+| AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
+| Store, payments, administration, recovery automation | Planned; not implemented |
 
-## Team Members
+See [Phase 1 report](docs/reports/PHASE_1_COMPLETION_REPORT.md) for verified status and [handoff](docs/reports/PHASE_1_HANDOFF.md) for next steps.
 
-| Name | Roll Number | Role |
-| :--- | :--- | :--- |
-| **Karkala Shiva Reddy** | 2520030105 | Repository Maintainer |
-| **Harivikash** | 2520030203 | Team Member |
-| **Prudhvi Sai** | 2520030286 | Team Member |
+## Quick start
 
----
+Prerequisites and exact commands are maintained in [Local development](docs/10-deployment/LOCAL_DEVELOPMENT.md). Frontend currently requires Node.js 24 LTS and npm. Backend requires Java 25 and Maven 3.9.9+ (Maven is not currently installed on the original inspection machine). Docker Desktop is needed for Compose and Testcontainers.
 
-## Project Status
-
-| Milestone | Status |
-| :--- | :---: |
-| Team formation | ✅ Completed |
-| Repository setup | ✅ Completed |
-| Project title finalization | ⏳ In progress |
-| Abstract submission and approval | ⬜ Pending |
-| Requirement analysis | ⬜ Pending |
-| System design | ⬜ Pending |
-| Implementation | ⬜ Pending |
-| Testing and validation | ⬜ Pending |
-| Final report and presentation | ⬜ Pending |
-
----
-
-## About This Repository
-
-This repository serves as the single source of truth for the CDIS project. It is intended to:
-
-- Maintain clear and version-controlled project documentation.
-- Track the evolution of the project from concept to completion.
-- Provide a collaborative workspace for all team members.
-- Preserve design decisions, implementation details, and test evidence.
-- Showcase the final deliverable in a structured and professional manner.
-
-Once the project is finalized, this section will be expanded with the project title, problem statement, objectives, and expected outcomes.
-
----
-
-## Planned Repository Structure
-
-```text
-CDIS-KLH-Y25-Project/
-│
-├── docs/                  # Project documentation and reports
-│   ├── abstract/          # Abstract and project proposal
-│   ├── design/            # Architecture and design documents
-│   └── reports/           # Review and final reports
-│
-├── src/                   # Source code and implementation
-│
-├── assets/                # Images, diagrams, and screenshots
-│
-├── presentations/         # Review and final presentation slides
-│
-├── tests/                 # Test cases and validation evidence
-│
-├── .gitignore
-└── README.md
+```powershell
+Copy-Item .env.example .env
+docker compose up --build
 ```
 
-> The structure will be refined once the project scope and technology stack are confirmed.
+Do not treat a command as verified unless the validation report records its result. A Compose setup is not a cloud deployment.
 
----
+## Repository map
 
-## Planned Documentation
+```text
+apps/web/                 React + TypeScript frontend
+apps/api/                 Spring Boot modular-monolith API
+services/                 Future worker boundaries (not implemented)
+packages/                 Future shared contracts (not implemented)
+infrastructure/           Future cloud/IaC design and implementations
+platform/                 Local/container/observability tooling
+docs/                     Product, architecture, security, testing, operations
+tests/                    Cross-application tests (as introduced)
+.github/workflows/        CI checks; no cloud credentials
+```
 
-The following documents are expected to be maintained in this repository:
+## Documentation
 
-- Project abstract and proposal
-- Problem statement and objectives
-- Requirement specification
-- System architecture and design
-- Database / cloud resource design
-- Implementation and deployment guide
-- Test plan and test results
-- User manual
-- Final project report
-- Review and final presentation slides
+- [Project charter](docs/01-project-overview/PROJECT_CHARTER.md)
+- [Requirements](docs/02-requirements/REQUIREMENTS_SPECIFICATION.md)
+- [System architecture](docs/03-architecture/SYSTEM_ARCHITECTURE.md)
+- [Architecture decisions](docs/04-architecture-decisions/)
+- [Security and threat model](docs/05-security/SECURITY_ARCHITECTURE.md)
+- [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
+- [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)
+- [Team workflow](docs/11-team-workflow/BRANCHING_STRATEGY.md)
 
----
+## Team
 
-## Technology Stack
+| Roll number | Name | Initial focus |
+|---|---|---|
+| 2520030105 | Karkala Shiva Reddy | Architecture, cloud, Terraform, DevSecOps, CI/CD, resilience, integration |
+| 2520030203 | Harivikash Katta | Backend, APIs, data, distributed systems, backend testing |
+| 2520030286 | Kari Prudhi Sai | Frontend, dashboard, observability UI, E2E, documentation support |
 
-The technology stack will be finalized after project selection.
+Responsibilities are collaborative; see [team responsibilities](docs/11-team-workflow/TEAM_RESPONSIBILITIES.md).
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | To be decided |
-| **Backend** | To be decided |
-| **Database** | To be decided |
-| **Cloud Platform** | To be decided |
-| **DevOps / Tools** | Git and GitHub (confirmed) |
+## Engineering and security
 
----
+Use feature branches and pull requests. Never commit credentials. `.env` is ignored; `.env.example` contains non-secret local defaults only. No cloud resource creation, paid service, GitHub settings change, push, or merge is part of Phase 1. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [cost policy](docs/08-finops/COST_MANAGEMENT_STRATEGY.md).
 
-## Project Milestones
+## License
 
-| Phase | Deliverable | Status |
-| :--- | :--- | :---: |
-| Phase 1 | Team formation and project selection | ⏳ In progress |
-| Phase 2 | Abstract and requirement analysis | ⬜ Pending |
-| Phase 3 | System design | ⬜ Pending |
-| Phase 4 | Implementation | ⬜ Pending |
-| Phase 5 | Testing and validation | ⬜ Pending |
-| Phase 6 | Final report and presentation | ⬜ Pending |
-
----
-
-## Collaboration Workflow
-
-To keep the repository clean and professional, the team follows these practices:
-
-1. **Main branch** — always kept stable and submission-ready.
-2. **Feature branches** — each task is developed in a separate branch using a clear naming convention such as `feature/<task-name>` or `docs/<document-name>`.
-3. **Commits** — written with concise, descriptive messages that explain the change.
-4. **Pull requests** — reviewed by at least one team member before merging.
-5. **Issues** — used to track tasks, bugs, and pending documentation.
-6. **Documentation** — updated alongside code so that the repository always reflects the current state of the project.
-
----
-
-## Related Repository
-
-The practical laboratory work for the same course is maintained here:
-
-- **CDIS-Y25-PRATICAL-SKILL** — [https://github.com/karkalashivareddy/CDIS-Y25-PRATICAL-SKILL](https://github.com/karkalashivareddy/CDIS-Y25-PRATICAL-SKILL)
-
----
-
-## Contact
-
-For questions or collaboration regarding this project:
-
-- **Karkala Shiva Reddy** — [@karkalashivareddy](https://github.com/karkalashivareddy)
-
----
-
-## Academic Note
-
-This repository is maintained for academic purposes as part of the **Cloud Infrastructure and Services** course. All project work, documentation, and deliverables will be published here in accordance with the course guidelines.
+No license is declared. All rights remain with their respective owners; do not assume reuse rights. A license should be selected by the repository maintainers before one is added.

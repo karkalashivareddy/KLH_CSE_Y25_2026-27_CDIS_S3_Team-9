@@ -1,0 +1,15 @@
+name: Documentation
+description: Improve or correct project documentation
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Document / missing information
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected correction or outcome

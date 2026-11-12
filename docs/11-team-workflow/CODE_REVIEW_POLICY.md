@@ -1,0 +1,3 @@
+# Code review policy
+
+**Purpose/scope:** review quality and safety for changes. Each PR explains problem, implementation, tests/evidence, security and infrastructure impact, documentation, and limitations. Reviewers verify scope, correctness, failure modes, accessibility, authorization/data handling, dependencies, logs/secrets, rollback/cleanup, and truthful status claims. Infrastructure changes require plan/policy review and cost/owner/teardown evidence; deployment requires explicit authorization. Do not approve generated/test results that were not run. Authors resolve or document comments; critical security findings block merge.

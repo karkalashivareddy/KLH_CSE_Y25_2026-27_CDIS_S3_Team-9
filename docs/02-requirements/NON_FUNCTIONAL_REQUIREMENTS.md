@@ -1,0 +1,24 @@
+# Non-functional, security, infrastructure, and recovery requirements
+
+Targets are proposed, not achieved; validate with workload, threat, budget, and recovery exercises before production use.
+
+| ID | Type | Description | Priority | Rationale | Acceptance criteria | Verification | Dependencies |
+|---|---|---|---|---|---|---|---|
+| NFR-001 | Performance | Proposed interactive API p95 <= 500 ms at 50 requests/s for agreed read workload. | Should | Measurable response objective. | Load test names hardware, dataset, duration, errors; result meets agreed threshold. | k6/JMeter later | workload definition |
+| NFR-002 | Availability | Proposed monthly service availability >= 99.5% after production deployment. | Could | Establishes testable availability goal. | SLI excludes approved maintenance and reports numerator/denominator. | SLO report | deployment/monitoring |
+| NFR-003 | Scalability | Stateless API replicas shall serve traffic behind a load balancer; session state not process-local. | Should | Horizontal scaling. | Two replicas pass API smoke/load tests without affinity. | integration/load | production architecture |
+| NFR-004 | Maintainability | Application boundaries and dependency versions shall be documented and pinned. | Must | Sustainable team delivery. | build/format/test gates pass; module ownership and ADR available. | CI/review | none |
+| NFR-005 | Accessibility | UI shall target WCAG 2.2 AA for core flows. | Should | Inclusive use. | keyboard, labels, contrast and automated/manual checks documented. | axe + manual | UI implementation |
+| SEC-001 | Security | Enforce least privilege and deny-by-default authorization for protected actions. | Must | Limit account compromise. | Negative role tests prove denied access; policies reviewed. | security tests | identity decision |
+| SEC-002 | Security | Secrets shall be supplied by approved runtime secret mechanisms, never source or image. | Must | Prevent credential leakage. | repository and image scans find no live secret; rotation documented. | secret scan/review | secret store |
+| SEC-003 | Security | Production data paths shall use TLS in transit and encryption at rest. | Must | Protect data confidentiality. | deployment settings and TLS scan verify encryption; exceptions documented. | config/scan | cloud architecture |
+| SEC-004 | Security | APIs shall validate input and return non-sensitive, consistent errors. | Must | Reduce injection/leakage. | invalid input rejected; error body excludes stack/config/secret. | integration tests | API contract |
+| SEC-005 | Security | CI dependencies, container images, and IaC shall be scanned. | Should | Detect supply-chain issues. | pipeline records tool/result and blocks agreed critical severity policy. | CI | tools available |
+| SEC-006 | Security | Payment simulation shall not collect/store cardholder data. | Must | Avoid unnecessary payment-data exposure. | API rejects PAN/CVV-shaped fields and stores only synthetic references. | security test/review | FR-006 |
+| INF-001 | Infrastructure | Local stack shall be described reproducibly with pinned images, health checks and named persistent volumes. | Must | Repeatable developer setup. | Compose config validates; dependent service health shown. | docker compose config/up | Docker |
+| INF-002 | Infrastructure | Production databases shall use private subnets and have no public address. | Must | Reduce external attack surface. | IaC review and deployed network inspection show no public route/ingress. | plan/policy/live review | cloud deployment |
+| INF-003 | Infrastructure | Cloud identity for CI shall use short-lived OIDC federation, not long-lived access keys. | Should | Reduce credential lifetime. | token trust scope restricts repo/ref/audience; no key secret exists. | IAM review | cloud approval |
+| DR-001 | Recovery | Proposed tier-1 order recovery RTO <= 4 hours and RPO <= 15 minutes. | Could | Bound target data loss/outage. | timed restore/failover exercise meets targets from stated failure point. | restore drill | backup strategy approval |
+| DR-002 | Recovery | Backups shall be encrypted, access-restricted, retention-defined, and restoration-tested. | Must | Backup without restore proof is insufficient. | restore evidence and checksum/integrity recorded; deletion/retention verified. | restore test | data classification |
+| DR-003 | Recovery | Recovery execution shall require authorization, prechecks, audit, and rollback/cleanup steps. | Must | Prevent abusive/destructive automation. | denied unauthorized run; approved drill records actor, scope and outcome. | policy/resilience tests | IAM + runbooks |
+| DR-004 | Recovery | Recovery objectives shall be measured through scheduled exercises, not inferred from architecture. | Must | Validate real recovery. | report includes observed RTO/RPO, environment, data point, and limitations. | timed game day | isolated environment |

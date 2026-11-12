@@ -1,0 +1,3 @@
+# Development standards
+
+**Purpose/scope:** maintainable team conventions. Use small domain-focused changes, readable names, strict TypeScript and Java formatting, externalized configuration, pinned versions, automated tests and ADRs for consequential decisions. Validate/normalize at boundaries; avoid secrets and sensitive logs; return stable error contracts. Prefer accessible, responsive UI with explicit loading/error/empty states. Keep provider SDK calls in adapters and module dependencies directional. Update docs and traceability with behavior changes. Tests should prove meaningful positive and negative outcomes. Follow conventional commit style and link work to an issue/acceptance criterion. No benchmark, scan or deployment claim without evidence.

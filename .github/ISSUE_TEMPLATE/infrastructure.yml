@@ -1,0 +1,23 @@
+name: Infrastructure task
+description: Propose a safe infrastructure change
+title: "infra: "
+labels: ["infrastructure"]
+body:
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose and environment
+    validations:
+      required: true
+  - type: textarea
+    id: estimate
+    attributes:
+      label: Cost estimate, owner, region and assumptions
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Security, approval, validation and teardown plan
+    validations:
+      required: true

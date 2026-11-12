@@ -31,3 +31,16 @@ node_modules/
 dist/
 build/
 target/
+coverage/
+.vite/
+.turbo/
+*.class
+*.jar
+*.war
+*.tsbuildinfo
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+compose.override.yaml
+.DS_Store

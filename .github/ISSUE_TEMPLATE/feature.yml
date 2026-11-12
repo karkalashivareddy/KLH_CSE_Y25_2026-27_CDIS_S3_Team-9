@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a product or engineering capability
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / user journey
+      description: Explain the need and affected user.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use measurable, testable outcomes.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Security, infrastructure, cost and documentation impact

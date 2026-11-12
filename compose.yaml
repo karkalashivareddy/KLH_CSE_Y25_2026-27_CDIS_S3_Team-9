@@ -1,0 +1,73 @@
+name: cloudresilience
+services:
+  web:
+    build: ./apps/web
+    ports:
+      - "${WEB_PORT:-5173}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [application]
+    restart: unless-stopped
+
+  api:
+    build: ./apps/api
+    environment:
+      SERVER_PORT: 8080
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 45s
+    networks: [application, data]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.7-alpine3.22
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cloudresilience}
+      POSTGRES_USER: ${POSTGRES_USER:-cloudresilience}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [data]
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.4.0-alpine3.22
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [data]
+    restart: unless-stopped
+
+networks:
+  application:
+  data:
+    internal: true
+
+volumes:
+  postgres-data:
+  redis-data:
