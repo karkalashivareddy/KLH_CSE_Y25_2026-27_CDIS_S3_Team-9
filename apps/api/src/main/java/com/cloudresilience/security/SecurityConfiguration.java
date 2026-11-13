@@ -84,6 +84,7 @@ public class SecurityConfiguration {
                      .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/*", "/api/v1/products/*/availability", "/api/v1/categories", "/api/v1/categories/*").permitAll()
                     .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                      .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                     .requestMatchers("/api/v1/checkout", "/api/v1/orders", "/api/v1/orders/**").hasRole("CUSTOMER")
                      .requestMatchers("/api/v1/cart", "/api/v1/cart/**").hasRole("CUSTOMER")
                     .requestMatchers("/api/v1/auth/me").authenticated()
                     .requestMatchers("/api/v1/**").denyAll()

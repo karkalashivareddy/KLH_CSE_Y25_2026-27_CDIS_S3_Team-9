@@ -1,0 +1,7 @@
+# ADR-028: No automatic reservation expiry; release/consume exactly once
+
+- **Status:** Accepted for Phase 5
+- **Context:** A timed worker can race payment, cancellation and fulfillment, and an untested worker could double-release stock.
+- **Decision:** Defer automatic reservation expiration. Pending payment is finalized synchronously in the normal path and can resume on same-key checkout retry. Confirmed reservations remain held until an eligible cancellation releases them or ADMIN moves the order to PROCESSING and consumes them. PAYMENT_FAILED releases them in the same transaction that records failure. Reservation rows transition only from RESERVED to RELEASED or COMMITTED, under the associated order/inventory row locks.
+- **Cancellation policy:** Customers may cancel only their own paid CONFIRMED order before processing; ADMIN may cancel a paid CONFIRMED order before processing and must supply a reason. Pending/unknown payment intents are not cancellable because their outcome is not yet known; retry the same idempotency key to resume. For confirmed simulated payments, cancellation marks payment VOIDED; this is not a refund because no funds exist. PROCESSING/SHIPPED/DELIVERED orders cannot be cancelled. Every release/consume is recorded in the inventory movement ledger and order status history.
+- **Limitation:** A process crash can leave an order/payment in PROCESSING with stock reserved until a same-key retry or future operational recovery mechanism. No automatic expiry guarantee is claimed.

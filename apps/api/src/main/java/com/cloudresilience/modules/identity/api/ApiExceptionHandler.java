@@ -2,6 +2,7 @@ package com.cloudresilience.modules.identity.api;
 
 import com.cloudresilience.modules.identity.application.EmailAlreadyRegisteredException;
 import com.cloudresilience.modules.identity.application.InvalidRegistrationException;
+import com.cloudresilience.modules.orders.domain.IllegalOrderTransitionException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Map;
@@ -53,6 +54,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ApiError> conflict(DataIntegrityViolationException exception, HttpServletRequest request) {
         return error(HttpStatus.CONFLICT, "The request conflicts with existing data", request, Map.of());
+    }
+
+    @ExceptionHandler(IllegalOrderTransitionException.class)
+    ResponseEntity<ApiError> invalidOrderTransition(IllegalOrderTransitionException exception, HttpServletRequest request) {
+        return error(HttpStatus.CONFLICT, exception.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler(ResponseStatusException.class)

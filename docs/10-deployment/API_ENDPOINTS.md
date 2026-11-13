@@ -43,3 +43,20 @@ Registration JSON:
 ```
 
 No role/permission field is accepted by the registration contract. A duplicate normalized email returns 409. Invalid request DTOs return 400. Login returns one generic 401 message for unknown email, wrong password, disabled, or locked accounts. No production administrator provisioning API exists.
+# Orders and checkout (Phase 5)
+
+All customer routes require an authenticated CUSTOMER session and CSRF token for mutations. `POST /api/v1/checkout` additionally requires an `Idempotency-Key` header (1–128 characters from `[A-Za-z0-9._:-]`) and a JSON body containing only `items: [{productId, quantity}]`. The request must match the authenticated customer's persisted cart. The API derives customer, product descriptions, prices, totals and inventory from PostgreSQL. Checkout and payment are simulated; no real payment data or charges are supported.
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/api/v1/checkout` | Create/resume idempotent checkout using cart line assertions |
+| GET | `/api/v1/orders?page=0&size=20` | List own orders |
+| GET | `/api/v1/orders/{orderId}` | Read own order snapshots and status history |
+| GET | `/api/v1/orders/{orderId}/payment` | Read own simulated payment status |
+| POST | `/api/v1/orders/{orderId}/cancel` | Cancel own paid CONFIRMED order before processing; requires `{ "reason": "..." }` |
+| GET | `/api/v1/admin/orders` | ADMIN paginated/filterable order list |
+| GET | `/api/v1/admin/orders/summary` | ADMIN status counts |
+| GET | `/api/v1/admin/orders/{orderId}` | ADMIN order detail |
+| PATCH | `/api/v1/admin/orders/{orderId}/status` | ADMIN fulfillment transition; body `{ "status": "PROCESSING|SHIPPED|DELIVERED|CANCELLED", "reason": "optional" }` |
+
+Payment simulator outcomes are set via `APP_PAYMENT_SIMULATOR_OUTCOME` (`SUCCESS` by default, `DECLINED`, `TIMEOUT`, or `FAILURE`). Cancellation of a confirmed order voids the simulated payment; it does not issue a real refund. Pending simulator requests cannot be manually cancelled because their result is unknown. Reservation expiry and real payment providers are not implemented.

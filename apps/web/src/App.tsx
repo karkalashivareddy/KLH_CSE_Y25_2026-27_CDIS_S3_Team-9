@@ -5,6 +5,7 @@ import { AuthProvider } from './auth'
 import { useAuth } from './auth-context'
 import { AdminCatalogPage, CatalogPage, ProductDetailPage } from './catalog'
 import { CartPage, CartProvider, useCart } from './cart'
+import { AdminOrderDetailPage, AdminOrdersPage, CheckoutPage, OrderDetailPage, OrderHistoryPage } from './orders'
 
 const links = [
   { href: '/', label: 'Overview', icon: '◫' },
@@ -41,7 +42,7 @@ function Shell({ children }: { children: ReactNode }) {
       <nav aria-label="Main navigation">{links.map((item) => <Link key={item.href} className={`nav-link ${location.pathname === item.href ? 'active' : ''}`} to={item.href}><span aria-hidden="true">{item.icon}</span>{item.label}</Link>)}</nav>
       <p className="nav-caption auth-nav-caption">ACCOUNT</p>
       <nav aria-label="Account navigation">
-          {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link>{user.roles.includes('CUSTOMER')&&<Link className={`nav-link ${location.pathname === '/cart' ? 'active' : ''}`} to="/cart"><span aria-hidden="true">🛒</span>Cart <span className="nav-cart-badge">{cart?.totalQuantity ?? 0}</span></Link>}{user.roles.includes('ADMIN')&&<Link className={`nav-link ${location.pathname.startsWith('/admin') ? 'active' : ''}`} to="/admin/catalog"><span aria-hidden="true">⌑</span>Admin catalog</Link>}<button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
+          {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link>{user.roles.includes('CUSTOMER')&&<><Link className={`nav-link ${location.pathname === '/cart' ? 'active' : ''}`} to="/cart"><span aria-hidden="true">🛒</span>Cart <span className="nav-cart-badge">{cart?.totalQuantity ?? 0}</span></Link><Link className={`nav-link ${location.pathname.startsWith('/orders') ? 'active' : ''}`} to="/orders"><span aria-hidden="true">▤</span>My orders</Link></>}{user.roles.includes('ADMIN')&&<><Link className={`nav-link ${location.pathname.startsWith('/admin/catalog') ? 'active' : ''}`} to="/admin/catalog"><span aria-hidden="true">⌑</span>Admin catalog</Link><Link className={`nav-link ${location.pathname.startsWith('/admin/orders') ? 'active' : ''}`} to="/admin/orders"><span aria-hidden="true">▤</span>Orders</Link></>}<button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
       </nav>
       {logoutError && <p className="nav-error" role="alert">{logoutError}</p>}
        <div className="sidebar-note"><span className="note-dot" />Phase 4 foundation<br /><small>Local development</small></div>
@@ -158,7 +159,12 @@ export default function App() {
     <Route path="/catalog" element={<CatalogPage />} />
     <Route path="/products/:id" element={<ProductDetailPage />} />
      <Route path="/cart" element={<ProtectedRoute requiredRole="CUSTOMER"><CartPage /></ProtectedRoute>} />
+     <Route path="/checkout" element={<ProtectedRoute requiredRole="CUSTOMER"><CheckoutPage /></ProtectedRoute>} />
+     <Route path="/orders" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderHistoryPage /></ProtectedRoute>} />
+     <Route path="/orders/:id" element={<ProtectedRoute requiredRole="CUSTOMER"><OrderDetailPage /></ProtectedRoute>} />
      <Route path="/admin/catalog" element={<ProtectedRoute requiredRole="ADMIN"><AdminCatalogPage /></ProtectedRoute>} />
+     <Route path="/admin/orders" element={<ProtectedRoute requiredRole="ADMIN"><AdminOrdersPage /></ProtectedRoute>} />
+     <Route path="/admin/orders/:id" element={<ProtectedRoute requiredRole="ADMIN"><AdminOrderDetailPage /></ProtectedRoute>} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />

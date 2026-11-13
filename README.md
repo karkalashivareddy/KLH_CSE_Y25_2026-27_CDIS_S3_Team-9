@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 3 is on `main`; Phase 4 distributed sessions and customer carts are in implementation on `feature/phase-4-distributed-state-cart`.** Phase 3 commit `aa9945c` was pushed directly to `main` and hosted CI passed. Phase 4 verification is recorded in its report; Docker-dependent gates may be blocked by local runtime availability. No cloud deployment or production e-commerce operations are claimed.
+> **Status: Phase 3 is on `main`; Phase 4 and Phase 5 are implemented locally on `feature/phase-5-orders-checkout-payments`, with Docker-dependent runtime gates unverified.** Phase 3 commit `aa9945c` was pushed directly to `main` and hosted CI passed. Phase 4 prerequisite verification and Phase 5 migration/checkout integration verification remain blocked by the unavailable local Docker engine. No cloud deployment or production e-commerce operations are claimed.
 
 ## Product and target architecture
 
@@ -21,11 +21,14 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Product catalog and categories | Implemented in V2; public search/filter/pagination and admin management are API-backed |
 | Inventory adjustment, reservation and movement ledger | Implemented with transactional PostgreSQL row locks; concurrent final-unit integration test passes |
 | Redis integration | Phase 4: shared Spring Session backend; not a cart/cache store |
-| Customer shopping cart | Phase 4: PostgreSQL persistence and customer-owned API/UI; no reservation or checkout |
+| Customer shopping cart | Phase 4 implementation present; PostgreSQL integration verification not run in this environment |
+| Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
+| Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
+| Order runtime verification | PostgreSQL/Redis-backed checkout, concurrency, rollback, ownership and migration tests skipped: Docker unavailable |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
-| Cart, orders, payments, recovery automation | Planned; not implemented |
+| Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 
-See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
+See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [order/checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
 
 ## Quick start
 

@@ -1,0 +1,7 @@
+# ADR-027: Persist payment intent and use a deterministic simulated gateway
+
+- **Status:** Accepted for Phase 5
+- **Context:** PostgreSQL cannot atomically commit with a real payment provider. This phase must not process real money but should preserve the future boundary.
+- **Decision:** Define a `PaymentGateway` port and `SimulatedPaymentGateway` adapter. The simulator accepts a stable persisted payment request UUID and returns a stable provider reference/outcome; it makes no network request and never charges money. Configuration selects SUCCESS, DECLINED, TIMEOUT or FAILURE for deterministic local/test scenarios. No card/bank credentials are collected or stored.
+- **Transaction boundary:** Transaction 1 persists order, snapshots, reservations and a PROCESSING payment intent. The synchronous API then calls the local simulator outside a database transaction. Transaction 2 locks payment/order, records the result, then either confirms the order or marks PAYMENT_FAILED and releases reservations. Repeated requests reuse the same persisted payment request ID; result finalization is idempotent. A crash between intent and finalization can be resumed by retrying the same checkout key.
+- **Future provider:** A real gateway requires durable outbox/worker, provider idempotency, timeout/unknown-outcome reconciliation and operational recovery. The current synchronous local simulator is not evidence that a remote side effect is transactionally safe. Simulator outcomes and UI must remain explicitly labeled as simulated.

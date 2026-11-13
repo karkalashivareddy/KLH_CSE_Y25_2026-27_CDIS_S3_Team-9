@@ -1,0 +1,8 @@
+# ADR-025: Reserve order inventory under ordered PostgreSQL row locks
+
+- **Status:** Accepted for Phase 5
+- **Context:** A multi-product checkout must reserve all requested quantities or none and must share the Phase 3 inventory source of truth.
+- **Decision:** Reuse `inventory`, `inventory_reservations`, and append-only `inventory_movements`. In one PostgreSQL transaction, lock the caller's cart, verify active products/categories, then lock each inventory row in ascending product UUID order using `SELECT ... FOR UPDATE`. Check available quantity and update `quantity_reserved`, create order-linked `RESERVED` rows, and append movement records. Order, snapshots, payment intent and reservations commit atomically.
+- **Failure:** Any missing/inactive product, missing inventory or insufficient quantity aborts the entire transaction. Database nonnegative and reserved<=on_hand constraints remain final guards. No partial reservation is committed.
+- **Lifecycle:** Successful payment leaves reservations held while order is CONFIRMED. Cancellation releases only `RESERVED` rows once. Transition to PROCESSING consumes a reservation once by decrementing both on-hand and reserved counts and changing its state to COMMITTED; a shipped/processing order cannot be cancelled. Failed payment releases reservations in the payment-result transaction.
+- **Expiration:** Automatic reservation expiry is deferred. No untested scheduled worker is introduced. Payment processing is synchronous at the API boundary with a persisted PROCESSING intent and same-request retry; confirmed reservations are released by cancellation or consumed by processing. Operational treatment of an abandoned PROCESSING order is documented as a limitation.

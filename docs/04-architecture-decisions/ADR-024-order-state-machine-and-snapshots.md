@@ -1,0 +1,8 @@
+# ADR-024: Explicit order lifecycle and immutable purchase snapshots
+
+- **Status:** Accepted for Phase 5
+- **Context:** Cart/catalog rows are mutable and cannot be the historical record of what a customer purchased.
+- **Decision:** Persist an order and immutable order-item snapshots (SKU, product name, unit price, quantity, line total). Product references are retained with `ON DELETE RESTRICT`; catalog changes never update snapshot columns. All monetary values use `NUMERIC(14,2)` / `BigDecimal`; USD remains the implemented currency.
+- **Order states:** `PENDING_PAYMENT -> CONFIRMED | PAYMENT_FAILED`; `CONFIRMED -> PROCESSING | CANCELLED`; `PROCESSING -> SHIPPED -> DELIVERED`. `PAYMENT_FAILED`, `CANCELLED`, `SHIPPED` and `DELIVERED` are terminal. Payment success is required before `CONFIRMED`. A pending simulator request cannot be cancelled while outcome is unknown; retry the same idempotency key to resume it. A confirmed order is cancellable only before processing; simulated payment becomes `VOIDED` (no real funds/refund). No return/refund flow exists.
+- **Authorization:** Customer may read/cancel only own order. ADMIN may read all orders and move a confirmed order to processing, processing to shipped, or shipped to delivered; ADMIN cancellation is allowed only before processing. Every transition is validated in application code under an order row lock and written to status history; clients cannot set arbitrary statuses.
+- **Consequences:** Order numbers are random opaque identifiers, distinct from UUID primary keys. Current catalog prices/names are not consulted for historical display.

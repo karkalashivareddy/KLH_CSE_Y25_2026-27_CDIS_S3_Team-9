@@ -75,6 +75,10 @@ info:
   app:
     name: CloudResilience API
     version: 0.1.0
+app:
+  payment:
+    simulator:
+      outcome: ${APP_PAYMENT_SIMULATOR_OUTCOME:SUCCESS}
 logging:
   structured:
     format:

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getApiHealth, login, logout } from './api'
+import { checkout, getApiHealth, login, logout } from './api'
 
 describe('getApiHealth', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -31,5 +31,20 @@ describe('getApiHealth', () => {
     await expect(logout()).resolves.toBeUndefined()
     expect(fetchMock.mock.calls[1][1]).toEqual(expect.objectContaining({ method: 'POST', credentials: 'same-origin', headers: expect.objectContaining({ 'X-XSRF-TOKEN': 'csrf-1' }) }))
     expect(fetchMock.mock.calls[3][1]).toEqual(expect.objectContaining({ method: 'POST', credentials: 'same-origin', headers: expect.objectContaining({ 'X-XSRF-TOKEN': 'csrf-2' }) }))
+  })
+
+  it('sends checkout assertions with CSRF and the caller idempotency key', async () => {
+    const order = { id: 'order-1', orderNumber: 'CR-TEST', status: 'CONFIRMED' }
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ headerName: 'X-XSRF-TOKEN', token: 'checkout-csrf' }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(order), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(checkout([{ productId: 'product-1', quantity: 2 }], 'checkout-attempt-1')).resolves.toEqual(order)
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({
+      method: 'POST',
+      headers: expect.objectContaining({ 'X-XSRF-TOKEN': 'checkout-csrf', 'Idempotency-Key': 'checkout-attempt-1' }),
+      body: JSON.stringify({ items: [{ productId: 'product-1', quantity: 2 }] }),
+    })
   })
 })

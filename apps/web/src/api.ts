@@ -7,6 +7,14 @@ export type ProductPage = { content: Product[]; page: number; size: number; tota
 export type Category = { id: string; name: string; slug: string; description?: string; active: boolean }
 export type CartItem = { itemId: string; productId: string; sku: string; name: string; status: string; unitPrice: number; currency: string; quantity: number; lineTotal: number; availableQuantity: number; productAvailable: boolean }
 export type Cart = { cartId: string | null; items: CartItem[]; itemCount: number; totalQuantity: number; subtotal: number; currency: string }
+export type OrderStatus = 'PENDING_PAYMENT' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'PAYMENT_FAILED'
+export type PaymentStatus = 'PROCESSING' | 'SUCCEEDED' | 'DECLINED' | 'TIMED_OUT' | 'FAILED' | 'VOIDED'
+export type OrderItem = { itemId: string; productId: string; sku: string; productName: string; unitPrice: number; quantity: number; lineTotal: number; createdAt: string }
+export type OrderHistory = { eventId: string; fromStatus: OrderStatus | null; toStatus: OrderStatus; reason?: string; createdAt: string }
+export type Order = { id: string; orderNumber: string; status: OrderStatus; paymentStatus: PaymentStatus; subtotal: number; discountAmount: number; taxAmount: number; shippingAmount: number; totalAmount: number; currency: string; cancellationReason?: string; createdAt: string; updatedAt: string; items: OrderItem[]; history: OrderHistory[] }
+export type Page<T> = { content: T[]; page: number; size: number; totalElements: number; totalPages: number }
+export type Payment = { id: string; status: PaymentStatus; amount: number; currency: string; failureCategory?: string; simulated: boolean; createdAt: string; updatedAt: string }
+export type OrderSummary = { totalOrders: number; byStatus: Record<string, number> }
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
 let csrf: { headerName: string; token: string } | null = null
@@ -80,6 +88,28 @@ export function addCartItem(productId: string, quantity: number): Promise<Cart> 
 export function updateCartItem(itemId: string, quantity: number): Promise<Cart> { return write(`/api/v1/cart/items/${itemId}`, 'PATCH', { quantity }) }
 export async function removeCartItem(itemId: string): Promise<Cart> { return request(`/api/v1/cart/items/${itemId}`, { method: 'DELETE', headers: await csrfHeader() }) }
 export async function clearCart(): Promise<Cart> { return request('/api/v1/cart/items', { method: 'DELETE', headers: await csrfHeader() }) }
+
+export function checkout(items: Array<{ productId: string; quantity: number }>, idempotencyKey: string): Promise<Order> {
+  return csrfHeader().then((headers) => request('/api/v1/checkout', {
+    method: 'POST', headers: { ...headers, 'Idempotency-Key': idempotencyKey }, body: JSON.stringify({ items }),
+  }))
+}
+
+export function getOrders(page = 0, size = 20): Promise<Page<Order>> { return request(`/api/v1/orders?page=${page}&size=${size}`) }
+export function getOrder(id: string): Promise<Order> { return request(`/api/v1/orders/${id}`) }
+export function cancelOrder(id: string, reason: string): Promise<void> { return mutate(`/api/v1/orders/${id}/cancel`, { reason }) }
+export function getPayment(id: string): Promise<Payment> { return request(`/api/v1/orders/${id}/payment`) }
+export function getAdminOrders(params: { page?: number; size?: number; status?: OrderStatus; q?: string } = {}): Promise<Page<Order>> {
+  const query = new URLSearchParams({ page: String(params.page ?? 0), size: String(params.size ?? 20) })
+  if (params.status) query.set('status', params.status)
+  if (params.q) query.set('q', params.q)
+  return request(`/api/v1/admin/orders?${query}`)
+}
+export function getAdminOrderSummary(): Promise<OrderSummary> { return request('/api/v1/admin/orders/summary') }
+export function getAdminOrder(id: string): Promise<Order> { return request(`/api/v1/admin/orders/${id}`) }
+export function updateOrderStatus(id: string, status: OrderStatus, reason?: string): Promise<Order> {
+  return write(`/api/v1/admin/orders/${id}/status`, 'PATCH', { status, reason })
+}
 
 export function getCurrentUser(): Promise<User> {
   return request('/api/v1/auth/me')
