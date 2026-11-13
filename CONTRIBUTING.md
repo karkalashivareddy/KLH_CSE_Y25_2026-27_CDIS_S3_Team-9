@@ -3,8 +3,8 @@
 Thanks for contributing to CloudResilience. This is an academic project workspace; see [README](README.md) and [team workflow](docs/11-team-workflow/BRANCHING_STRATEGY.md).
 
 1. Check/create an issue and branch (`feature/`, `fix/`, `docs/`, `infra/`, or `test/`).
-2. Make a focused change consistent with existing architecture and requirements.
-3. Add meaningful tests and update docs/traceability.
+2. Make a focused change consistent with existing architecture and requirements. PostgreSQL owns durable identity/catalog/inventory/cart state; Redis is for shared sessions only.
+3. Add meaningful tests and update API, migration, security and operations docs/traceability. Cart work must not reserve inventory or trust browser-provided owner IDs.
 4. Run relevant checks and report exact results; mention unavailable dependencies or skipped tests.
 5. Open a PR using the template and request a teammate review.
 

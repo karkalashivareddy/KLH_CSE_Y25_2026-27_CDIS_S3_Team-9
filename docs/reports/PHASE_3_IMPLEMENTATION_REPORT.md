@@ -1,8 +1,8 @@
 # Phase 3 implementation report
 
-**Status: PASS for locally verified Phase 3 scope; hosted Phase 3 CI is PENDING.**
-**Branch:** `feature/phase-3-catalog-inventory` (based on Phase 2 commit `14a4dec`).
-**Git:** Phase 2 commit `14a4dec` was explicitly pushed directly to `main`; Phase 3 remains uncommitted and unpushed. No Phase 3 PR exists and no Phase 3 commit/push was made.
+**Status: PASS for locally verified Phase 3 scope; hosted Phase 3 CI also passed.**
+**Branch:** Phase 3 was initially prepared on `feature/phase-3-catalog-inventory`, then explicitly pushed directly to `main`.
+**Git:** Phase 3 commit `aa9945c` (`feat: implement phase 3 catalog and inventory`) is on `main`. No Phase 3 PR was created. The repository was subsequently consolidated to a single `main` branch before Phase 4.
 
 ## 1. Executive summary
 
@@ -52,8 +52,8 @@ The public catalog consumes the API for product cards/detail, category filtering
 | Gitleaks local working-tree scan | **PASS:** 834,179 bytes scanned, no leaks found. |
 | Docker Compose | **PASS:** API, PostgreSQL, Redis and web healthy; Flyway V2 applied; Hibernate validates schema. Existing named volumes preserved. |
 | HTTP smoke | **PASS:** empty public catalog and search return valid pages; invalid sort returns 400; anonymous admin read returns 401. No local admin/demo product was created. |
-| Hosted GitHub CI | **PARTIAL:** Phase 2 commit `14a4dec` CI run `43243992683` succeeded. Phase 3 is not pushed, so no hosted Phase 3 run exists. |
-| Maven OSV/dependency vulnerability scan | **PARTIAL:** configured in CI; not independently run for unpushed Phase 3 changes. No new Maven dependencies were added. |
+| Hosted GitHub CI | **PASS:** Phase 3 commit `aa9945c` CI run `43251999066` completed successfully. |
+| Maven OSV/dependency vulnerability scan | **PASS via hosted CI workflow:** run `43251999066`; no new Phase 3 Maven dependencies were added. |
 
 Testcontainers ran from a Maven container with the Docker socket mounted and `TESTCONTAINERS_RYUK_DISABLED=true`; the tests themselves stopped their containers. The normal Compose Maven image build compiles/tests non-Docker tests, while Docker-backed integration evidence is from the explicit Testcontainers run.
 
@@ -75,7 +75,7 @@ Testcontainers ran from a Maven container with the Docker socket mounted and `TE
 - Reservation HTTP endpoints are ADMIN-only until cart/order ownership and lifecycle are implemented.
 - Search is substring `LIKE` over name/SKU; consider trigram/full-text indexes only if measured volume warrants them.
 - No cloud deployment, cart, order, payment, caching, Kubernetes, or external search service is included.
-- Phase 3 changes are uncommitted/unpushed; hosted Phase 3 CI and its Maven vulnerability scan remain pending.
+- Phase 3 is committed on `main`; its hosted CI passed. Phase 4 is a separate, uncommitted worktree change and must not be attributed to Phase 3.
 
 ## 10. Local execution
 

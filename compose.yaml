@@ -18,10 +18,17 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cloudresilience}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
       APP_SECURITY_COOKIE_SECURE: ${APP_SECURITY_COOKIE_SECURE:-false}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
+      APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
@@ -30,6 +37,39 @@ services:
       retries: 5
       start_period: 45s
     networks: [application, data]
+    restart: unless-stopped
+
+  api2:
+    profiles: [two-api]
+    build: ./apps/api
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cloudresilience}?connectTimeout=5&socketTimeout=10
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cloudresilience}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      APP_SECURITY_COOKIE_SECURE: ${APP_SECURITY_COOKIE_SECURE:-false}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
+      APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
+    ports:
+      - "127.0.0.1:${API2_PORT:-8081}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 45s
+    networks:
+      application:
+        aliases: [api]
+      data: {}
     restart: unless-stopped
 
   postgres:
@@ -52,13 +92,13 @@ services:
 
   redis:
     image: redis:8.4.0-alpine3.22
-    command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    command: ["sh", "-c", "if [ -n \"$$REDIS_PASSWORD\" ]; then exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"; else exec redis-server --appendonly yes; fi"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG; else redis-cli ping | grep -q PONG; fi"]
       interval: 10s
       timeout: 3s
       retries: 5

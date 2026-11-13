@@ -1,8 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { adjustInventory, createCategory, createProduct, getAdminCategories, getAdminProducts, getCategories, getInventory, getProduct, getProducts, initializeInventory, releaseInventory, reserveInventory, updateCategory, updateProduct, updateProductStatus, type Category, type Product, type ProductPage } from './api'
+import { useAuth } from './auth-context'
+import { useCart } from './cart'
 
 export function CatalogPage() {
+  const { user } = useAuth()
   const [params, setParams] = useSearchParams()
   const [page, setPage] = useState<ProductPage | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -17,18 +20,21 @@ export function CatalogPage() {
     <form className="catalog-filters" onSubmit={filter}><label>Search products<input aria-label="Search products" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Name or SKU" /></label><label>Category<select aria-label="Category" value={categoryId} onChange={e=>setCategoryId(e.target.value)}><option value="">All categories</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><button>Apply filters</button></form>
     {error&&<p role="alert" className="form-error">{error}</p>}{loading&&<p role="status">Loading catalog…</p>}
     {!loading&&page?.content.length===0&&<section className="empty-state"><h2>No products found</h2><p>Try another search or category. Active products will appear here.</p></section>}
-    <section className="product-grid" aria-label="Products">{page?.content.map(p=><ProductCard key={p.id} product={p}/>)}</section>
+     <section className="product-grid" aria-label="Products">{page?.content.map(p=><ProductCard key={p.id} product={p} canAdd={Boolean(user?.roles.includes('CUSTOMER'))}/>)}</section>
     {page&&page.totalPages>1&&<nav className="pagination" aria-label="Product pages"><button disabled={page.page===0} onClick={()=>setParams({...Object.fromEntries(params),page:String(page.page-1)})}>Previous</button><span>Page {page.page+1} of {page.totalPages}</span><button disabled={page.page+1>=page.totalPages} onClick={()=>setParams({...Object.fromEntries(params),page:String(page.page+1)})}>Next</button></nav>}
   </div>
 }
 export function ProductDetailPage() {
   const { id = '' } = useParams(); const [product,setProduct]=useState<Product|null>(null); const [error,setError]=useState('')
+  const { user } = useAuth()
+  const { add } = useCart()
+  const [cartMessage, setCartMessage] = useState('')
   useEffect(()=>{getProduct(id).then(setProduct).catch(()=>setError('This active product could not be found.'))},[id])
   if(error)return <div className="page-content"><p role="alert">{error}</p><Link to="/catalog">Back to catalog</Link></div>
   if(!product)return <div className="page-content" role="status">Loading product…</div>
-  return <div className="page-content product-detail"><span className="eyebrow">{product.category_name} · {product.sku}</span><h1>{product.name}</h1>{product.image_url&&<img src={product.image_url} alt=""/>}<p>{product.description??product.short_description}</p><h2>${Number(product.price).toFixed(2)} {product.currency}</h2><p>{product.available_quantity>0?`${product.available_quantity} available`:'Currently out of stock'}</p><Link to="/catalog">← Back to catalog</Link></div>
+  return <div className="page-content product-detail"><span className="eyebrow">{product.category_name} · {product.sku}</span><h1>{product.name}</h1>{product.image_url&&<img src={product.image_url} alt=""/>}<p>{product.description??product.short_description}</p><h2>${Number(product.price).toFixed(2)} {product.currency}</h2><p>{product.available_quantity>0?`${product.available_quantity} available`:'Currently out of stock'}</p>{user?.roles.includes('CUSTOMER')&&<button onClick={async()=>{try{await add(product.id);setCartMessage('Added to your cart.')}catch(e){setCartMessage(e instanceof Error?e.message:'The item could not be added.')}}}>Add to cart</button>}{cartMessage&&<p role="status">{cartMessage}</p>}<Link to="/catalog">← Back to catalog</Link></div>
 }
-function ProductCard({product:p}:{product:Product}) { return <article className="product-card">{p.image_url?<img src={p.image_url} alt="" loading="lazy"/>:<div className="product-placeholder" aria-hidden="true">CR</div>}<div className="product-info"><small>{p.category_name} · {p.sku}</small><h2><Link to={`/products/${p.id}`}>{p.name}</Link></h2><p>{p.short_description ?? 'Explore product details.'}</p><strong>${Number(p.price).toFixed(2)} {p.currency}</strong><span className={p.available_quantity>0?'stock-in':'stock-out'}>{p.available_quantity>0?`${p.available_quantity} available`:'Out of stock'}</span></div></article> }
+function ProductCard({product:p,canAdd}:{product:Product;canAdd:boolean}) { const {add}=useCart(); const [message,setMessage]=useState(''); const [pending,setPending]=useState(false); return <article className="product-card">{p.image_url?<img src={p.image_url} alt="" loading="lazy"/>:<div className="product-placeholder" aria-hidden="true">CR</div>}<div className="product-info"><small>{p.category_name} · {p.sku}</small><h2><Link to={`/products/${p.id}`}>{p.name}</Link></h2><p>{p.short_description ?? 'Explore product details.'}</p><strong>${Number(p.price).toFixed(2)} {p.currency}</strong><span className={p.available_quantity>0?'stock-in':'stock-out'}>{p.available_quantity>0?`${p.available_quantity} available`:'Out of stock'}</span>{canAdd&&<button disabled={pending} onClick={async()=>{setPending(true);setMessage('');try{await add(p.id);setMessage('Added to cart.')}catch(e){setMessage(e instanceof Error?e.message:'Could not add item.')}finally{setPending(false)}}}>{pending?'Adding…':'Add to cart'}</button>}{message&&<span role="status">{message}</span>}</div></article> }
 
 export function AdminCatalogPage() {
   const [categories,setCategories]=useState<Category[]>([]); const [products,setProducts]=useState<Product[]>([]); const [selected,setSelected]=useState(''); const [productEditId,setProductEditId]=useState(''); const [selectedCategory,setSelectedCategory]=useState(''); const [inventory,setInventory]=useState<Awaited<ReturnType<typeof getInventory>>|null>(null); const [reservationId,setReservationId]=useState(''); const [message,setMessage]=useState(''); const [error,setError]=useState('')

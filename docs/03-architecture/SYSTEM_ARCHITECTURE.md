@@ -9,15 +9,15 @@ flowchart LR
   Shopper[Shopper] -->|HTTPS| Web[React web app]
   Admin[Administrator / operator] -->|HTTPS + MFA| Web
   Web -->|JSON REST| API[Spring Boot modular monolith]
-  API --> DB[(Private PostgreSQL)]
-  API --> Cache[(Redis cache)]
+  API --> DB[(Private PostgreSQL: durable business data)]
+  API --> Cache[(Redis: distributed HTTP sessions)]
   API --> Queue[Queue / event adapter]
   Queue --> Worker[Optional background workers]
   API --> Telemetry[OpenTelemetry collector / backend]
   Operator[Cloud operator] -->|approved control plane| Cloud[Cloud provider APIs]
 ```
 
-Implemented in Phase 1: local web shell; API health/info. Foundation: docs, local DB/cache Compose services, CI. Future: commerce modules, auth, workers, queue, cloud, telemetry and DR. Optional: Kubernetes only if deployment needs justify it.
+Implemented through Phase 4: React client, Spring modular monolith, PostgreSQL identity/catalog/inventory/cart, Redis-backed shared HTTP sessions, CSRF and role authorization. Redis is not a cart store or general cache. Future: orders, payments, workers, queue, cloud, telemetry and DR. Optional: Kubernetes only if deployment needs justify it.
 
 ## Module boundaries
 

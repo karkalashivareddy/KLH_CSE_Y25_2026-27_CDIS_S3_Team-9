@@ -3,8 +3,9 @@ server:
   shutdown: graceful
   servlet:
     session:
-      timeout: 30m
+      timeout: ${APP_SESSION_TIMEOUT:30m}
       cookie:
+        name: JSESSIONID
         http-only: true
         secure: ${APP_SECURITY_COOKIE_SECURE:false}
         same-site: lax
@@ -13,6 +14,21 @@ spring:
     name: cloudresilience-api
   lifecycle:
     timeout-per-shutdown-phase: 20s
+  session:
+    store-type: redis
+    timeout: ${APP_SESSION_TIMEOUT:30m}
+    redis:
+      namespace: ${APP_SESSION_REDIS_NAMESPACE:cloudresilience:sessions}
+      flush-mode: immediate
+      save-mode: on_set_attribute
+      cleanup-cron: "0 * * * * *"
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
+      timeout: ${REDIS_READ_TIMEOUT:2s}
   jackson:
     default-property-inclusion: non_null
   datasource:
@@ -46,7 +62,7 @@ management:
         enabled: true
       group:
         readiness:
-          include: readinessState,db
+          include: readinessState,db,redis
   health:
     readinessstate:
       enabled: true

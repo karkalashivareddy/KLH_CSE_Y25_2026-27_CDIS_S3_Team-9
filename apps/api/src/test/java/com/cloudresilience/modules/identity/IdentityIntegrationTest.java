@@ -22,6 +22,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import jakarta.servlet.http.Cookie;
@@ -39,12 +40,17 @@ class IdentityIntegrationTest {
 
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.7-alpine3.22");
+    @Container
+    static final GenericContainer<?> REDIS = new GenericContainer<>("redis:8.4.0-alpine3.22").withExposedPorts(6379);
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry properties) {
         properties.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         properties.add("spring.datasource.username", POSTGRES::getUsername);
         properties.add("spring.datasource.password", POSTGRES::getPassword);
+        properties.add("spring.session.store-type", () -> "redis");
+        properties.add("spring.data.redis.host", REDIS::getHost);
+        properties.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
     }
 
     @Autowired MockMvc mvc;

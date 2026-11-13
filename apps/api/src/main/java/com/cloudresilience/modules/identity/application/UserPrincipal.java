@@ -18,7 +18,8 @@ public record UserPrincipal(
         String lastName,
         boolean enabled,
         boolean accountLocked,
-        List<RoleName> roles) implements UserDetails {
+        List<RoleName> roles) implements UserDetails, java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static UserPrincipal from(UserEntity user) {
         return new UserPrincipal(user.getId(), user.getEmail(), user.getPasswordHash(), user.getFirstName(),
@@ -37,4 +38,8 @@ public record UserPrincipal(
     @Override public boolean isCredentialsNonExpired() { return true; }
 
     @Override public String toString() { return "UserPrincipal[id=" + id + ", roles=" + roles + "]"; }
+
+    public UserPrincipal withoutCredentials() {
+        return new UserPrincipal(id, email, null, firstName, lastName, enabled, accountLocked, roles);
+    }
 }

@@ -67,8 +67,11 @@ public class AuthController {
         }
 
         sessionAuthenticationStrategy.onAuthentication(authentication, servletRequest, servletResponse);
+        UserPrincipal principal = ((UserPrincipal) authentication.getPrincipal()).withoutCredentials();
+        Authentication sessionAuthentication = UsernamePasswordAuthenticationToken.authenticated(
+                principal, null, authentication.getAuthorities());
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
+        context.setAuthentication(sessionAuthentication);
         SecurityContextHolder.setContext(context);
         contextRepository.saveContext(context, servletRequest, servletResponse);
         csrfTokenRepository.saveToken(null, servletRequest, servletResponse);

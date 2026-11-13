@@ -4,6 +4,7 @@ import { ApiError, checkAdminAccess, getApiHealth, type ApiHealth } from './api'
 import { AuthProvider } from './auth'
 import { useAuth } from './auth-context'
 import { AdminCatalogPage, CatalogPage, ProductDetailPage } from './catalog'
+import { CartPage, CartProvider, useCart } from './cart'
 
 const links = [
   { href: '/', label: 'Overview', icon: '◫' },
@@ -26,6 +27,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
 function Shell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const { user, loading, logout } = useAuth()
+  const { cart } = useCart()
   const [logoutError, setLogoutError] = useState('')
   async function handleLogout() {
     setLogoutError('')
@@ -39,10 +41,10 @@ function Shell({ children }: { children: ReactNode }) {
       <nav aria-label="Main navigation">{links.map((item) => <Link key={item.href} className={`nav-link ${location.pathname === item.href ? 'active' : ''}`} to={item.href}><span aria-hidden="true">{item.icon}</span>{item.label}</Link>)}</nav>
       <p className="nav-caption auth-nav-caption">ACCOUNT</p>
       <nav aria-label="Account navigation">
-         {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link>{user.roles.includes('ADMIN')&&<Link className={`nav-link ${location.pathname.startsWith('/admin') ? 'active' : ''}`} to="/admin/catalog"><span aria-hidden="true">⌑</span>Admin catalog</Link>}<button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
+          {user ? <><Link className={`nav-link ${location.pathname === '/account' ? 'active' : ''}`} to="/account"><span aria-hidden="true">◎</span>My account</Link>{user.roles.includes('CUSTOMER')&&<Link className={`nav-link ${location.pathname === '/cart' ? 'active' : ''}`} to="/cart"><span aria-hidden="true">🛒</span>Cart <span className="nav-cart-badge">{cart?.totalQuantity ?? 0}</span></Link>}{user.roles.includes('ADMIN')&&<Link className={`nav-link ${location.pathname.startsWith('/admin') ? 'active' : ''}`} to="/admin/catalog"><span aria-hidden="true">⌑</span>Admin catalog</Link>}<button className="nav-link nav-button" onClick={handleLogout} disabled={loading}><span aria-hidden="true">↪</span>Sign out</button></> : <><Link className="nav-link" to="/login"><span aria-hidden="true">↪</span>Sign in</Link><Link className="nav-link" to="/register"><span aria-hidden="true">＋</span>Create account</Link></>}
       </nav>
       {logoutError && <p className="nav-error" role="alert">{logoutError}</p>}
-      <div className="sidebar-note"><span className="note-dot" />Phase 2 foundation<br /><small>Local development</small></div>
+       <div className="sidebar-note"><span className="note-dot" />Phase 4 foundation<br /><small>Local development</small></div>
       <div className="profile"><span className="avatar">{user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : '—'}</span><span><strong>{user ? `${user.firstName} ${user.lastName}` : 'Not signed in'}</strong><small>{user?.email ?? 'Guest session'}</small></span></div>
     </aside>
     <main className="main-area"><header className="topbar"><span className="breadcrumb">CloudResilience <span>/</span> <strong>{links.find((item) => item.href === location.pathname)?.label ?? 'Account'}</strong></span><span className="env-pill"><i /> LOCAL FOUNDATION</span></header>{children}</main>
@@ -58,11 +60,11 @@ function Overview() {
     <div className="section-heading"><div><h2>Foundation status</h2><p>Real application connectivity only; no cloud telemetry is shown.</p></div><span className="status-label"><i /> DEVELOPMENT</span></div>
     <section className="status-grid" aria-label="Foundation status">
       <article className="status-card"><div className="card-top"><span className="status-icon blue">API</span><span className="tag">BACKEND</span></div><h3>Application API</h3><p role="status" aria-live="polite">{health ? `Health endpoint: ${health.status}` : error ? 'API is not reachable' : 'Checking local API…'}</p><div className={`service-state ${health ? 'up' : error ? 'down' : ''}`}><i />{health ? 'Connected' : error ? 'Unavailable' : 'Checking'}</div></article>
-      <article className="status-card"><div className="card-top"><span className="status-icon teal">DB</span><span className="tag">LOCAL SERVICE</span></div><h3>Data services</h3><p>PostgreSQL stores account identity; Redis is not yet used by the API.</p><div className="service-state planned"><i />Integration pending</div></article>
+      <article className="status-card"><div className="card-top"><span className="status-icon teal">DB</span><span className="tag">STATE SERVICES</span></div><h3>Data services</h3><p>PostgreSQL owns durable business data and carts; Redis stores shared HTTP sessions.</p><div className="service-state planned"><i />Runtime status: use API readiness</div></article>
       <article className="status-card"><div className="card-top"><span className="status-icon violet">☁</span><span className="tag">CLOUD</span></div><h3>Cloud providers</h3><p>No cloud account is connected in this phase.</p><div className="service-state planned"><i />Not connected</div></article>
     </section>
     <section className="callout"><span className="callout-mark">✳</span><div><strong>Designed for deliberate resilience</strong><p>Identity is protected by server-side sessions, backend authorization, and CSRF defenses.</p></div><Link to="/register">Create a customer account <span aria-hidden="true">→</span></Link></section>
-    <footer className="page-footer">CloudResilience · Team 9 <span>Phase 2 · Identity foundation</span></footer>
+     <footer className="page-footer">CloudResilience · Team 9 <span>Phase 4 · Distributed state</span></footer>
   </div>
 }
 
@@ -127,12 +129,12 @@ function RegisterPage() {
   </AuthLayout>
 }
 
-function ProtectedRoute({ children, requiredRole }: { children: ReactNode; requiredRole?: 'ADMIN' }) {
+function ProtectedRoute({ children, requiredRole }: { children: ReactNode; requiredRole?: 'ADMIN' | 'CUSTOMER' }) {
   const { user, loading } = useAuth()
   const location = useLocation()
   if (loading) return <AuthLayout title="Checking your session"><p role="status">Verifying current account…</p></AuthLayout>
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
-  if (requiredRole && !user.roles.includes(requiredRole)) return <AuthLayout title="Access denied"><p role="alert">Your account does not have administrator access.</p><Link to="/account">Return to your account</Link></AuthLayout>
+  if (requiredRole && !user.roles.includes(requiredRole)) return <AuthLayout title="Access denied"><p role="alert">{requiredRole === 'ADMIN' ? 'Your account does not have administrator access.' : 'Your account does not have customer access.'}</p><Link to="/account">Return to your account</Link></AuthLayout>
   return children
 }
 
@@ -149,17 +151,18 @@ function AdminPage() {
 }
 
 export default function App() {
-  return <AuthProvider><ErrorBoundary><Shell><Routes>
+  return <AuthProvider><CartProvider><ErrorBoundary><Shell><Routes>
     <Route path="/" element={<Overview />} />
     <Route path="/architecture" element={<InformationPage title="Architecture" copy="The target architecture and design decisions are maintained in the repository documentation." />} />
      <Route path="/recovery" element={<InformationPage title="Recovery planning" copy="Recovery objectives and workflows are being defined; no recovery automation is available." />} />
     <Route path="/catalog" element={<CatalogPage />} />
     <Route path="/products/:id" element={<ProductDetailPage />} />
-    <Route path="/admin/catalog" element={<ProtectedRoute requiredRole="ADMIN"><AdminCatalogPage /></ProtectedRoute>} />
+     <Route path="/cart" element={<ProtectedRoute requiredRole="CUSTOMER"><CartPage /></ProtectedRoute>} />
+     <Route path="/admin/catalog" element={<ProtectedRoute requiredRole="ADMIN"><AdminCatalogPage /></ProtectedRoute>} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminPage /></ProtectedRoute>} />
     <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes></Shell></ErrorBoundary></AuthProvider>
+  </Routes></Shell></ErrorBoundary></CartProvider></AuthProvider>
 }

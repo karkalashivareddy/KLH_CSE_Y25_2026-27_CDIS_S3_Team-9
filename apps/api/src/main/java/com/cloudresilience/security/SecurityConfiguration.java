@@ -23,6 +23,8 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.session.web.http.SessionRepositoryFilter;
 
 @Configuration
 public class SecurityConfiguration {
@@ -41,6 +43,13 @@ public class SecurityConfiguration {
 
     @Bean
     SessionAuthenticationStrategy sessionAuthenticationStrategy() { return new ChangeSessionIdAuthenticationStrategy(); }
+
+    @Bean
+    FilterRegistrationBean<RedisAvailabilityFilter> redisAvailabilityFilter(ObjectMapper mapper) {
+        var registration = new FilterRegistrationBean<>(new RedisAvailabilityFilter(mapper));
+        registration.setOrder(SessionRepositoryFilter.DEFAULT_ORDER - 1);
+        return registration;
+    }
 
     @Bean
     CsrfTokenRepository csrfTokenRepository(@Value("${app.security.cookie.secure:false}") boolean secure) {
@@ -74,7 +83,8 @@ public class SecurityConfiguration {
                      .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                      .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/*", "/api/v1/products/*/availability", "/api/v1/categories", "/api/v1/categories/*").permitAll()
                     .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                     .requestMatchers("/api/v1/cart", "/api/v1/cart/**").hasRole("CUSTOMER")
                     .requestMatchers("/api/v1/auth/me").authenticated()
                     .requestMatchers("/api/v1/**").denyAll()
                     .anyRequest().permitAll());

@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async logout() {
       await apiLogout()
       setUser(null)
+      window.dispatchEvent(new Event('cloudresilience:logout'))
     },
   }), [user, loading])
 

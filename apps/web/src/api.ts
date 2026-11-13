@@ -5,6 +5,8 @@ export type LoginInput = { email: string; password: string }
 export type Product = { id: string; sku: string; name: string; slug: string; short_description?: string; description?: string; price: number; currency: string; category_id: string; category_name: string; image_url?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; available_quantity: number }
 export type ProductPage = { content: Product[]; page: number; size: number; totalElements: number; totalPages: number }
 export type Category = { id: string; name: string; slug: string; description?: string; active: boolean }
+export type CartItem = { itemId: string; productId: string; sku: string; name: string; status: string; unitPrice: number; currency: string; quantity: number; lineTotal: number; availableQuantity: number; productAvailable: boolean }
+export type Cart = { cartId: string | null; items: CartItem[]; itemCount: number; totalQuantity: number; subtotal: number; currency: string }
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
 let csrf: { headerName: string; token: string } | null = null
@@ -72,6 +74,12 @@ export function getInventory(id: string): Promise<{ inventory: { quantity_on_han
 export function getApiHealth(): Promise<ApiHealth> {
   return request('/api/v1/health', { signal: AbortSignal.timeout(3000) })
 }
+
+export function getCart(): Promise<Cart> { return request('/api/v1/cart') }
+export function addCartItem(productId: string, quantity: number): Promise<Cart> { return mutate('/api/v1/cart/items', { productId, quantity }) }
+export function updateCartItem(itemId: string, quantity: number): Promise<Cart> { return write(`/api/v1/cart/items/${itemId}`, 'PATCH', { quantity }) }
+export async function removeCartItem(itemId: string): Promise<Cart> { return request(`/api/v1/cart/items/${itemId}`, { method: 'DELETE', headers: await csrfHeader() }) }
+export async function clearCart(): Promise<Cart> { return request('/api/v1/cart/items', { method: 'DELETE', headers: await csrfHeader() }) }
 
 export function getCurrentUser(): Promise<User> {
   return request('/api/v1/auth/me')

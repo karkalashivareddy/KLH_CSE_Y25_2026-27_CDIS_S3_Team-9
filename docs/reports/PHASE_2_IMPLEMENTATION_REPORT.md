@@ -136,3 +136,7 @@ The above Compose/API smoke flow was executed successfully in this environment. 
 ## 13. Readiness for next milestone
 
 **PASS for Phase 2 local definition-of-done gates; hosted CI pending.** PostgreSQL persistence/migration, registration/login/logout, customer/admin authorization, CSRF/session behavior, real frontend-to-backend flow, Phase 1 regression checks, documentation, and local security/dependency scans have evidence above. Hosted GitHub CI must still be run after an authorized push; no commit, push, or merge was performed. No production/cloud readiness is claimed.
+
+## Post-push and Phase 4 status correction
+
+This document records the Phase 2 implementation-time snapshot. Phase 2 commit `14a4dec` was later explicitly pushed to `main`; hosted CI run `43243992683` passed. The process-local session limitation stated in Sections 6 and 11 was superseded in source by Phase 4 Spring Session/Redis implementation on the local `feature/phase-4-distributed-state-cart` branch. See [`PHASE_4_IMPLEMENTATION_REPORT.md`](PHASE_4_IMPLEMENTATION_REPORT.md): distributed behavior is implemented but its Docker-dependent integration verification is BLOCKED in this environment. This addendum does not claim Phase 4 production readiness.

@@ -2,10 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { CatalogPage } from './catalog'
+import { AuthContext } from './auth-context'
+import { CartProvider } from './cart'
 
 const page = { content: [
   { id: 'p-1', sku: 'LAMP-1', name: 'Desk lamp', slug: 'desk-lamp', price: 29.5, currency: 'USD', category_id: 'c-1', category_name: 'Lighting', available_quantity: 2 },
 ], page: 0, size: 12, totalElements: 13, totalPages: 2 }
+const auth = { user: null, loading: false, login: vi.fn(), register: vi.fn(), logout: vi.fn() }
+function renderCatalog() { return render(<AuthContext.Provider value={auth}><CartProvider><MemoryRouter><CatalogPage/></MemoryRouter></CartProvider></AuthContext.Provider>) }
 
 describe('catalog page', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -16,7 +20,7 @@ describe('catalog page', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(page),{status:200}))
       .mockResolvedValueOnce(new Response(JSON.stringify(page),{status:200}))
     vi.stubGlobal('fetch',fetchMock)
-    render(<MemoryRouter><CatalogPage/></MemoryRouter>)
+    renderCatalog()
     expect(await screen.findByRole('link',{name:'Desk lamp'})).toBeTruthy()
     expect(screen.getByText('2 available')).toBeTruthy()
     fireEvent.change(screen.getByLabelText('Search products'),{target:{value:'lamp'}})
@@ -32,11 +36,11 @@ describe('catalog page', () => {
     vi.stubGlobal('fetch',vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify([]),{status:200}))
       .mockResolvedValueOnce(new Response(JSON.stringify({...page,content:[],totalElements:0,totalPages:0}),{status:200})))
-    const {unmount}=render(<MemoryRouter><CatalogPage/></MemoryRouter>)
+    const {unmount}=renderCatalog()
     expect(await screen.findByText('No products found')).toBeTruthy()
     unmount()
     vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({message:'unavailable'}),{status:503})))
-    render(<MemoryRouter><CatalogPage/></MemoryRouter>)
+    renderCatalog()
     expect(await screen.findByRole('alert')).toBeTruthy()
   })
 })

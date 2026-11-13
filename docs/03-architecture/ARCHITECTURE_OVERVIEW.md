@@ -6,8 +6,8 @@
 flowchart LR
   User[Shopper / operator] --> Web[React + TypeScript]
   Web --> API[Spring Boot modular monolith]
-  API --> PG[(PostgreSQL)]
-  API --> Redis[(Redis)]
+  API --> PG[(PostgreSQL: identity, catalog, inventory, carts)]
+  API --> Redis[(Redis: shared HTTP sessions)]
   API -. future async .-> Worker[Independent worker]
   API -. future providers .-> AWS[AWS primary target]
   API -. comparison .-> Other[Azure / GCP]

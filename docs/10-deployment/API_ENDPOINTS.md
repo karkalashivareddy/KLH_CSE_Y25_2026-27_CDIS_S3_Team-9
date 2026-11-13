@@ -25,8 +25,16 @@ Base path: `/api/v1`. OpenAPI JSON is available at `/v3/api-docs`; local Swagger
 | `POST /api/v1/admin/inventory/{productId}/adjustments` | ADMIN + CSRF | Signed non-zero `delta`, required reason; cannot reduce below reserved |
 | `POST /api/v1/admin/inventory/{productId}/reservations` | ADMIN + CSRF | Positive quantity; serialized check-and-reserve; returns reservation ID |
 | `POST /api/v1/admin/inventory/{productId}/reservations/{reservationId}/release` | ADMIN + CSRF | Release a RESERVED record once |
+| `GET /api/v1/cart` | CUSTOMER | Owned active cart with current price/availability and subtotal; creates an empty active cart if absent |
+| `GET /api/v1/cart/summary` | CUSTOMER | Owned cart line count, total quantity and current subtotal |
+| `POST /api/v1/cart/items` | CUSTOMER + CSRF | Add quantity to a product line (existing line quantity is incremented); active products only |
+| `PATCH /api/v1/cart/items/{itemId}` | CUSTOMER + CSRF | Set line quantity, 1–9999 |
+| `DELETE /api/v1/cart/items/{itemId}` | CUSTOMER + CSRF | Remove only an item in the caller's cart |
+| `DELETE /api/v1/cart/items` | CUSTOMER + CSRF | Clear the caller's cart, retaining its active cart record |
 
 Catalog product pages use `content`, `page`, `size`, `totalElements`, and `totalPages`. Sort fields are allowlisted (`name`, `sku`, `price`, `createdAt`); direction is `asc`/`desc`, with ID tie-breaking. Search is case-insensitive name/SKU substring matching. Inventory availability is derived; customers cannot mutate inventory or reservations. Mutation errors use the common error envelope: 400 validation, 401 unauthenticated, 403 non-admin, 404 unknown/unpublished resources, 409 uniqueness/lifecycle/insufficient-stock conflicts.
+
+Cart responses include `cartId`, `items`, `itemCount`, `totalQuantity`, `subtotal`, and currency. Each line contains item/product IDs, SKU/name/status, current unit price, quantity, line total, current availability, and `productAvailable`. Archived/inactive lines remain visible but cannot be newly added. Quantity may exceed current stock; cart mutations never reserve or change stock. Prices and availability are display-time values; checkout must revalidate them. Ownership always comes from the authenticated CUSTOMER principal. An ADMIN without CUSTOMER role cannot access cart endpoints. Missing and non-owned items both return 404. Redis outages fail readiness and do not fall back to local sessions. OpenAPI output at `/v3/api-docs` includes these routes.
 
 Registration JSON:
 

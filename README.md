@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 3 catalog/inventory implemented and locally verified.** PostgreSQL-backed browsing and admin operations, transactional inventory and concurrency tests pass locally. Phase 3 has not been pushed; hosted Phase 3 CI is pending. Phase 2 was pushed directly to `main` at `14a4dec`, whose hosted CI passed. No cloud deployment or production e-commerce operations are claimed.
+> **Status: Phase 3 is on `main`; Phase 4 distributed sessions and customer carts are in implementation on `feature/phase-4-distributed-state-cart`.** Phase 3 commit `aa9945c` was pushed directly to `main` and hosted CI passed. Phase 4 verification is recorded in its report; Docker-dependent gates may be blocked by local runtime availability. No cloud deployment or production e-commerce operations are claimed.
 
 ## Product and target architecture
 
@@ -20,11 +20,12 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | PostgreSQL schema and Flyway migration | Implemented and verified against PostgreSQL 17.7 locally |
 | Product catalog and categories | Implemented in V2; public search/filter/pagination and admin management are API-backed |
 | Inventory adjustment, reservation and movement ledger | Implemented with transactional PostgreSQL row locks; concurrent final-unit integration test passes |
-| Redis integration | Not implemented; service is available in Compose but unused |
+| Redis integration | Phase 4: shared Spring Session backend; not a cart/cache store |
+| Customer shopping cart | Phase 4: PostgreSQL persistence and customer-owned API/UI; no reservation or checkout |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Cart, orders, payments, recovery automation | Planned; not implemented |
 
-See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/security design](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
+See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
 
 ## Quick start
 
@@ -61,6 +62,7 @@ tests/                    Cross-application tests (as introduced)
 - [Authentication and sessions](docs/05-security/AUTHENTICATION_AND_SESSIONS.md)
 - [Identity schema](docs/03-architecture/IDENTITY_SCHEMA.md)
 - [Catalog and inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md)
+- [Distributed sessions and cart design](docs/03-architecture/DISTRIBUTED_STATE_CART_DESIGN.md)
 - [API endpoint reference](docs/10-deployment/API_ENDPOINTS.md)
 - [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
 - [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)

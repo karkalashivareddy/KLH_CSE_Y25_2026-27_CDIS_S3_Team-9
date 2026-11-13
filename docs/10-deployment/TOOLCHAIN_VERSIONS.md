@@ -6,7 +6,7 @@
 |---|---:|---|
 | Java | 25 LTS | Supplied project baseline; local runtime verified as Java 25 (build 25+37). |
 | Spring Boot | 4.1.2 | Official Spring Boot project page listed 4.1.2; Java 25 compatible baseline. Verify starter/dependency changes when compiling. |
-| Maven | 3.9.11 (container) / 3.9.9+ | Pinned build image and practical minimum; local `mvn` absent at audit time. |
+| Maven | 3.9.11 | Pinned build image; local Maven 3.9.11 distribution in approved temp path used for Phase 4 checks. |
 | Node.js | 24 LTS | Official Node releases page showed 24 in LTS; local v24.19.0. Vite guide requires >=20.19 or >=22.12. |
 | npm | 11.x | Local 11.17.0; lockfile required for exact dependency tree. |
 | React / React DOM | 19.3.1 | Registry version observed during setup; exact package pin. |
@@ -17,7 +17,7 @@
 | Vitest | 5.1.0 | Registry version observed. |
 | PostgreSQL | 17.7-alpine3.22 | Explicit minor image tag for local persistence; production patch digest should be pinned by CI/release process. |
 | Redis | 8.4.0-alpine3.22 | Explicit image tag for local persistence; production patch digest should be pinned by CI/release process. |
-| Docker Engine | 29.7.2 observed | Local tooling observation only. Compose plugin version still needs verification. |
+| Docker Engine | Not available during Phase 4 execution | Docker CLI exists, but the Linux engine named pipe was unavailable; Compose/Testcontainers runtime gates are BLOCKED. |
 | Terraform | Not selected for install | No valid Terraform configuration in this phase; binary absent, no IaC claim. |
 
 Package versions are exact in `apps/web/package.json`; Maven parent, plugin versions, Java release, and container tags are explicit in build files. npm lockfile must be generated and committed as part of validation. Maven transitive versions are managed by pinned Spring Boot BOM. Upgrade after compatibility tests and review release/security notes.
@@ -29,4 +29,4 @@ Package versions are exact in `apps/web/package.json`; Maven parent, plugin vers
 - Node release status: https://nodejs.org/en/about/previous-releases
 - npm package registry (`npm view <package> version`, checked in execution environment).
 
-**Validation:** local `java`, Node, npm and Docker version commands ran; Maven and Terraform commands were not found. Related: [local development](LOCAL_DEVELOPMENT.md), ADR-002.
+**Validation:** Phase 4 observed Java 25, Node 24.19.0, npm 11.17.0, Maven 3.9.11, Spring Boot 4.1.2, PostgreSQL 17.7, Redis 8.4.0, React/React DOM 19.3.1, React Router 7.18.5 and Vite 8.3.8. Docker daemon unavailable at validation. Related: [local development](LOCAL_DEVELOPMENT.md), ADR-002.
