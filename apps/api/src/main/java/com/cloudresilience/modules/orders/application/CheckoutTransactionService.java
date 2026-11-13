@@ -1,5 +1,8 @@
 package com.cloudresilience.modules.orders.application;
 
+import com.cloudresilience.modules.events.application.OutboxWriter;
+import com.cloudresilience.modules.events.domain.EventType;
+import com.cloudresilience.modules.events.domain.OrderEventPayloads;
 import com.cloudresilience.modules.orders.api.CheckoutRequest;
 import com.cloudresilience.modules.orders.domain.OrderStatus;
 import com.cloudresilience.modules.orders.domain.PaymentStatus;
@@ -26,10 +29,12 @@ public class CheckoutTransactionService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private final JdbcTemplate jdbc;
     private final PricingCalculator pricing;
+    private final OutboxWriter outbox;
 
-    public CheckoutTransactionService(JdbcTemplate jdbc, PricingCalculator pricing) {
+    public CheckoutTransactionService(JdbcTemplate jdbc, PricingCalculator pricing, OutboxWriter outbox) {
         this.jdbc = jdbc;
         this.pricing = pricing;
+        this.outbox = outbox;
     }
 
     public record PreparedCheckout(UUID orderId, UUID paymentId, UUID requestId, String orderNumber,
@@ -122,10 +127,14 @@ public class CheckoutTransactionService {
         PaymentRow payment = payments.getFirst();
         if (payment.status() != PaymentStatus.PROCESSING) return;
         var orders = jdbc.query("""
-                SELECT id,customer_id,cart_id,status,payment_status FROM customer_orders WHERE id=? FOR UPDATE
+                SELECT o.id,o.customer_id,o.cart_id,o.status,o.payment_status,o.order_number,o.total_amount,o.currency,
+                       (SELECT count(*) FROM order_items oi WHERE oi.order_id=o.id) item_count
+                FROM customer_orders o WHERE o.id=? FOR UPDATE
                 """, (rs, row) -> new LockedOrder(rs.getObject("id", UUID.class), rs.getObject("customer_id", UUID.class),
                 rs.getObject("cart_id", UUID.class), OrderStatus.valueOf(rs.getString("status")),
-                PaymentStatus.valueOf(rs.getString("payment_status"))), payment.orderId());
+                PaymentStatus.valueOf(rs.getString("payment_status")), rs.getString("order_number"),
+                rs.getBigDecimal("total_amount"), rs.getString("currency").trim(), rs.getInt("item_count")),
+                payment.orderId());
         if (orders.isEmpty()) throw new IllegalStateException("Payment order is missing");
         LockedOrder order = orders.getFirst();
         if (order.status() != OrderStatus.PENDING_PAYMENT || order.paymentStatus() != PaymentStatus.PROCESSING) return;
@@ -139,12 +148,18 @@ public class CheckoutTransactionService {
                     order.id());
             history(order.id(), OrderStatus.PENDING_PAYMENT, OrderStatus.CONFIRMED, order.customerId(), "Simulated payment succeeded");
             removePurchasedCartLines(order);
+            outbox.append(EventType.ORDER_PLACED, order.id(), OrderEventPayloads.order(order.id(), order.customerId(),
+                    order.orderNumber(), OrderStatus.CONFIRMED, PaymentStatus.SUCCEEDED, order.totalAmount(),
+                    order.currency(), order.itemCount()), order.id(), null);
         } else {
             releaseReservations(order.id(), order.customerId(), "Order payment failed");
             jdbc.update("UPDATE customer_orders SET status='PAYMENT_FAILED',payment_status=?,version=version+1,updated_at=CURRENT_TIMESTAMP WHERE id=?",
                     result.status().name(), order.id());
             history(order.id(), OrderStatus.PENDING_PAYMENT, OrderStatus.PAYMENT_FAILED, order.customerId(),
                     "Simulated payment " + result.status().name().toLowerCase(java.util.Locale.ROOT));
+            outbox.append(EventType.ORDER_PAYMENT_FAILED, order.id(), OrderEventPayloads.order(order.id(),
+                    order.customerId(), order.orderNumber(), OrderStatus.PAYMENT_FAILED, result.status(),
+                    order.totalAmount(), order.currency(), order.itemCount()), order.id(), null);
         }
     }
 
@@ -313,5 +328,6 @@ public class CheckoutTransactionService {
     private record InventoryRow(long onHand, long reserved) {}
     private record ReservationRow(UUID id, UUID productId, long quantity, String status) {}
     private record PaymentRow(UUID id, UUID orderId, UUID requestId, PaymentStatus status) {}
-    private record LockedOrder(UUID id, UUID customerId, UUID cartId, OrderStatus status, PaymentStatus paymentStatus) {}
+    private record LockedOrder(UUID id, UUID customerId, UUID cartId, OrderStatus status, PaymentStatus paymentStatus,
+            String orderNumber, BigDecimal totalAmount, String currency, int itemCount) {}
 }

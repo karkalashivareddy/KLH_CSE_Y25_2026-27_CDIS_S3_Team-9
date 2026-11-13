@@ -29,6 +29,27 @@ spring:
       password: ${REDIS_PASSWORD:}
       connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
       timeout: ${REDIS_READ_TIMEOUT:2s}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:cloudresilience}
+    password: ${RABBITMQ_PASSWORD:}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    connection-timeout: 5s
+    requested-heartbeat: 30s
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+      retry:
+        enabled: false
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 10
+        default-requeue-rejected: false
+        missing-queues-fatal: false
+        auto-startup: ${APP_MESSAGING_ENABLED:true}
   jackson:
     default-property-inclusion: non_null
   datasource:
@@ -63,6 +84,8 @@ management:
       group:
         readiness:
           include: readinessState,db,redis
+        messaging:
+          include: outbox,eventQueues,rabbit
   health:
     readinessstate:
       enabled: true
@@ -79,6 +102,20 @@ app:
   payment:
     simulator:
       outcome: ${APP_PAYMENT_SIMULATOR_OUTCOME:SUCCESS}
+  messaging:
+    enabled: ${APP_MESSAGING_ENABLED:true}
+    retry-tiers-ms: ${APP_MESSAGING_RETRY_TIERS_MS:5000,30000,120000}
+    confirm-timeout-ms: ${APP_MESSAGING_CONFIRM_TIMEOUT_MS:5000}
+  outbox:
+    publisher:
+      enabled: ${APP_OUTBOX_PUBLISHER_ENABLED:true}
+      interval-ms: ${APP_OUTBOX_PUBLISHER_INTERVAL_MS:1000}
+      initial-delay-ms: ${APP_OUTBOX_PUBLISHER_INITIAL_DELAY_MS:2000}
+      batch-size: ${APP_OUTBOX_PUBLISHER_BATCH_SIZE:50}
+      lease-seconds: ${APP_OUTBOX_PUBLISHER_LEASE_SECONDS:30}
+      max-attempts: ${APP_OUTBOX_PUBLISHER_MAX_ATTEMPTS:8}
+      base-backoff-seconds: ${APP_OUTBOX_PUBLISHER_BASE_BACKOFF_SECONDS:2}
+      max-backoff-seconds: ${APP_OUTBOX_PUBLISHER_MAX_BACKOFF_SECONDS:300}
 logging:
   structured:
     format:

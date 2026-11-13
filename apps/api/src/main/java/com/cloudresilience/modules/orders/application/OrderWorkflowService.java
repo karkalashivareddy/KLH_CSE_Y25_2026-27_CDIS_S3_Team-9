@@ -1,5 +1,8 @@
 package com.cloudresilience.modules.orders.application;
 
+import com.cloudresilience.modules.events.application.OutboxWriter;
+import com.cloudresilience.modules.events.domain.EventType;
+import com.cloudresilience.modules.events.domain.OrderEventPayloads;
 import com.cloudresilience.modules.orders.domain.IllegalOrderTransitionException;
 import com.cloudresilience.modules.orders.domain.OrderStateMachine;
 import com.cloudresilience.modules.orders.domain.OrderStatus;
@@ -15,10 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class OrderWorkflowService {
     private final JdbcTemplate jdbc;
     private final CheckoutTransactionService reservations;
+    private final OutboxWriter outbox;
 
-    public OrderWorkflowService(JdbcTemplate jdbc, CheckoutTransactionService reservations) {
+    public OrderWorkflowService(JdbcTemplate jdbc, CheckoutTransactionService reservations, OutboxWriter outbox) {
         this.jdbc = jdbc;
         this.reservations = reservations;
+        this.outbox = outbox;
     }
 
     @Transactional
@@ -45,6 +50,14 @@ public class OrderWorkflowService {
         jdbc.update("UPDATE customer_orders SET status=?,version=version+1,updated_at=CURRENT_TIMESTAMP WHERE id=?",
                 target.name(), order.id());
         history(order.id(), order.status(), target, adminId, cleanReason(reason));
+        EventType eventType = switch (target) {
+            case PROCESSING -> EventType.ORDER_PROCESSING_STARTED;
+            case SHIPPED -> EventType.ORDER_SHIPPED;
+            case DELIVERED -> EventType.ORDER_DELIVERED;
+            default -> throw new IllegalStateException("Unsupported administrative transition event");
+        };
+        outbox.append(eventType, order.id(), OrderEventPayloads.transition(order.id(), order.customerId(),
+                order.orderNumber(), target, order.paymentStatus(), order.itemCount(), reason), order.id(), null);
     }
 
     private void cancel(LockedOrder order, UUID actorId, String reason) {
@@ -64,19 +77,26 @@ public class OrderWorkflowService {
                     version=version+1,updated_at=CURRENT_TIMESTAMP WHERE id=?
                 """, reason.strip(), order.id());
         history(order.id(), order.status(), OrderStatus.CANCELLED, actorId, reason.strip());
+        outbox.append(EventType.ORDER_CANCELLED, order.id(), OrderEventPayloads.cancellation(order.id(),
+                order.customerId(), order.orderNumber(), order.totalAmount(), "USD"), order.id(), null);
     }
 
     private LockedOrder lockOrder(UUID customerId, UUID orderId) {
         String sql = customerId == null
-                ? "SELECT id,order_number,status,payment_status FROM customer_orders WHERE id=? FOR UPDATE"
-                : "SELECT id,order_number,status,payment_status FROM customer_orders WHERE id=? AND customer_id=? FOR UPDATE";
+                ? "SELECT o.id,o.customer_id,o.order_number,o.status,o.payment_status,o.total_amount,(SELECT count(*) FROM order_items oi WHERE oi.order_id=o.id) item_count FROM customer_orders o WHERE o.id=? FOR UPDATE OF o"
+                : "SELECT o.id,o.customer_id,o.order_number,o.status,o.payment_status,o.total_amount,(SELECT count(*) FROM order_items oi WHERE oi.order_id=o.id) item_count FROM customer_orders o WHERE o.id=? AND o.customer_id=? FOR UPDATE OF o";
         var rows = customerId == null
-                ? jdbc.query(sql, (rs, row) -> new LockedOrder(rs.getObject("id", UUID.class), rs.getString("order_number"),
-                        OrderStatus.valueOf(rs.getString("status")), PaymentStatus.valueOf(rs.getString("payment_status"))), orderId)
-                : jdbc.query(sql, (rs, row) -> new LockedOrder(rs.getObject("id", UUID.class), rs.getString("order_number"),
-                        OrderStatus.valueOf(rs.getString("status")), PaymentStatus.valueOf(rs.getString("payment_status"))), orderId, customerId);
+                ? jdbc.query(sql, (rs, row) -> map(rs), orderId)
+                : jdbc.query(sql, (rs, row) -> map(rs), orderId, customerId);
         if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
         return rows.getFirst();
+    }
+
+    private LockedOrder map(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return new LockedOrder(rs.getObject("id", UUID.class), rs.getObject("customer_id", UUID.class),
+                rs.getString("order_number"), OrderStatus.valueOf(rs.getString("status")),
+                PaymentStatus.valueOf(rs.getString("payment_status")), rs.getBigDecimal("total_amount"),
+                rs.getInt("item_count"));
     }
 
     private void history(UUID orderId, OrderStatus from, OrderStatus to, UUID actorId, String reason) {
@@ -88,5 +108,6 @@ public class OrderWorkflowService {
 
     private String cleanReason(String reason) { return reason == null || reason.isBlank() ? null : reason.strip(); }
 
-    private record LockedOrder(UUID id, String orderNumber, OrderStatus status, PaymentStatus paymentStatus) {}
+    private record LockedOrder(UUID id, UUID customerId, String orderNumber, OrderStatus status,
+            PaymentStatus paymentStatus, java.math.BigDecimal totalAmount, int itemCount) {}
 }

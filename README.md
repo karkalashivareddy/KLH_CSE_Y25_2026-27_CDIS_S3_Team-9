@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 3 is on `main`; Phase 4 and Phase 5 are implemented locally on `feature/phase-5-orders-checkout-payments`, with Docker-dependent runtime gates unverified.** Phase 3 commit `aa9945c` was pushed directly to `main` and hosted CI passed. Phase 4 prerequisite verification and Phase 5 migration/checkout integration verification remain blocked by the unavailable local Docker engine. No cloud deployment or production e-commerce operations are claimed.
+> **Status: Phase 6 is implemented on `feature/phase-6-event-driven-processing`; local unit checks pass and Docker-dependent verification is delegated to hosted CI.** Phases 1–5 are integrated on `main`. Phase 6 adds a transactional outbox, versioned order events, RabbitMQ retry/dead-letter topology, idempotent notification and activity consumers, and operator notification/dead-letter APIs. Docker-backed PostgreSQL/RabbitMQ tests are skipped locally because no Docker engine is available; they are not passes. No cloud deployment, managed broker, or production e-commerce operation is claimed.
 
 ## Product and target architecture
 
@@ -23,12 +23,13 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Redis integration | Phase 4: shared Spring Session backend; not a cart/cache store |
 | Customer shopping cart | Phase 4 implementation present; PostgreSQL integration verification not run in this environment |
 | Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
+| Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
-| Order runtime verification | PostgreSQL/Redis-backed checkout, concurrency, rollback, ownership and migration tests skipped: Docker unavailable |
+| Order runtime verification | PostgreSQL/Redis/RabbitMQ-backed checkout, concurrency, rollback, ownership, migration and event tests skipped locally: Docker unavailable |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 
-See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [order/checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
+See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [Phase 6 implementation report](docs/reports/PHASE_6_IMPLEMENTATION_REPORT.md), [order/checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md), [event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md), [event catalog](docs/03-architecture/EVENT_CATALOG.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
 
 ## Quick start
 
@@ -66,6 +67,9 @@ tests/                    Cross-application tests (as introduced)
 - [Identity schema](docs/03-architecture/IDENTITY_SCHEMA.md)
 - [Catalog and inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md)
 - [Distributed sessions and cart design](docs/03-architecture/DISTRIBUTED_STATE_CART_DESIGN.md)
+- [Order and checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md)
+- [Event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md)
+- [Event catalog](docs/03-architecture/EVENT_CATALOG.md)
 - [API endpoint reference](docs/10-deployment/API_ENDPOINTS.md)
 - [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
 - [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)

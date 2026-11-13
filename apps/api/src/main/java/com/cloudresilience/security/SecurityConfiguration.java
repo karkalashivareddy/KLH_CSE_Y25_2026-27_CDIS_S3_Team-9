@@ -85,6 +85,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                      .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                      .requestMatchers("/api/v1/checkout", "/api/v1/orders", "/api/v1/orders/**").hasRole("CUSTOMER")
+                     .requestMatchers("/api/v1/notifications", "/api/v1/notifications/**").hasRole("CUSTOMER")
                      .requestMatchers("/api/v1/cart", "/api/v1/cart/**").hasRole("CUSTOMER")
                     .requestMatchers("/api/v1/auth/me").authenticated()
                     .requestMatchers("/api/v1/**").denyAll()
