@@ -5,7 +5,8 @@
 **Date:** 2026-11-13  
 **Branch:** `feature/phase-6-event-driven-processing`  
 **Base commit:** `4a1b237` (`main`, Phase 5 tip)  
-**Commit SHA:** pending at report authoring time; recorded in the PR description and final Git state below.
+**Implementation commit:** `28f5dcc` (`feat: implement phase 6 event-driven order processing`)  
+**Report/docs follow-up commit:** this file's commit on the same branch (see PR history).
 
 ## Scope delivered
 
@@ -67,6 +68,6 @@
 
 ## Git state
 
-- Branch created from `main` at `4a1b237`.
+- Branch created from `main` at `4a1b237`; implementation commit `28f5dcc`.
 - No force-push, history rewrite, cloud provisioning, or deployment performed.
-- Final commit SHA, PR URL and hosted CI URL are appended after commit/push in the PR and final handoff.
+- PR URL and hosted CI URL are recorded in the PR and final handoff.
