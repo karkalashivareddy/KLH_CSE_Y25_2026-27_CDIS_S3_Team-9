@@ -1,6 +1,6 @@
 # Phase 6 event-driven processing implementation report
 
-**Status: Implementation complete locally; Docker-backed verification pending hosted CI.** No claim is made that Flyway V5, PostgreSQL outbox leasing, RabbitMQ topology, consumer retries/dead-lettering, or Compose run until the integration tests execute on a Docker-capable runner. Skipped Docker tests are not passes.
+**Status: Phase 6 implementation and local Docker-backed verification pass; hosted CI and GitHub integration remain pending.** The verification below ran in the working tree after the listed regression fixes. No cloud resources were provisioned.
 
 **Date:** 2026-11-13  
 **Branch:** `feature/phase-6-event-driven-processing`  
@@ -24,21 +24,20 @@
 
 | Check | Result | Evidence |
 |---|---|---|
-| `mvn -B -ntp -f apps/api/pom.xml -DskipTests compile` | **PASS** | 69 main sources compiled, Java 25 |
-| `mvn -B -ntp -f apps/api/pom.xml test-compile` | **PASS** | 18 test sources compiled |
-| `mvn -B -ntp -f apps/api/pom.xml test` | **PASS (unit only)** | 64 tests, 29 passed, 35 skipped, 0 failures, 0 errors |
+| `mvn -B -ntp -Dmaven.repo.local=<user-cache> -f apps/api/pom.xml verify -DrunIntegrationTests=true` | **PASS** | 64 tests, 64 passed, 0 skipped, 0 failures, 0 errors; packaged successfully on Java 25 with Docker 29.7.2 |
 | New unit tests | **PASS** | `EventEnvelopeCodecTest` 3, `EventTopologyTest` 3, `OutboxPublisherTest` 4 |
-| Docker-backed integration tests | **SKIPPED / NOT RUN** | 35 skipped: `EventDrivenIntegrationTest` 6, `OutboxLeaseIntegrationTest` 4, `OrderIntegrationTest` 9, `CartIntegrationTest` 8, `IdentityIntegrationTest` 2, `RedisOutageIntegrationTest` 1, `SharedSessionIntegrationTest` 1, `InventoryConcurrencyIntegrationTest` 4 |
-| Flyway V1–V5 on PostgreSQL | **NOT VERIFIED LOCALLY** | Docker engine unavailable (`docker info` found no engine) |
-| RabbitMQ topology/retry/DLQ/replay | **NOT VERIFIED LOCALLY** | Requires the skipped `EventDrivenIntegrationTest` |
-| Compose `config`/`up` | **NOT RUN** | Docker engine unavailable; Compose file updated but not executed |
+| Docker-backed integration tests | **PASS** | All event, checkout, cart, inventory, identity, Redis outage, and shared-session cases executed; 0 skipped |
+| Flyway V1–V5 on PostgreSQL 17.7 | **PASS** | Applied and validated in Testcontainers |
+| RabbitMQ topology/retry/DLQ/replay | **PASS** | `EventDrivenIntegrationTest` and `OutboxLeaseIntegrationTest` executed |
+| `docker compose config --quiet` | **PASS** | Compose configuration parsed; services were not started as a full application stack |
 | Frontend `npm run lint` | **PASS** | eslint clean |
 | Frontend `npm run typecheck` | **PASS** | `tsc -b` clean |
 | Frontend `npm test -- --reporter=dot` | **PASS** | 21 tests in 6 files |
 | Frontend `npm run build` | **PASS** | 29 modules transformed; production build written |
+| `npm.cmd audit --audit-level=moderate` | **PASS** | 0 vulnerabilities |
 | `git diff --check` | **PASS** | no whitespace errors |
-| Gitleaks / dependency vulnerability scan | **NOT RUN** | not executed in this phase |
-| Hosted CI (`runIntegrationTests=true`) | **PENDING** | to be recorded from the PR checks |
+| Gitleaks / OSV Maven scan | **NOT RUN LOCALLY** | scanner CLIs are unavailable; hosted workflow has not been inspected |
+| Hosted CI (`runIntegrationTests=true`) | **NOT VERIFIED** | `gh` authentication token is invalid, so hosted run status could not be queried |
 
 ## Test intent added
 
@@ -51,7 +50,8 @@
 
 ## Blockers and limitations
 
-- The local machine has no usable Docker engine, so all Testcontainers and Compose runtime claims are blocked. The hosted CI job is the intended Docker-capable verifier.
+- The hosted CI result and required hosted security jobs remain unverified because the configured GitHub CLI credential is invalid.
+- The full Compose application stack was not started; only Compose syntax/configuration validation ran.
 - Delivery is at-least-once; there is no exactly-once or ordered delivery claim. Events for one aggregate may be published out of order under retries.
 - The publisher runs in the API process. There is no dedicated worker, leader election, inbox retention/archival, automatic DLQ drain, or bulk replay.
 - Notifications are persisted in-app only. No email, SMS, push, or external provider is integrated.
@@ -59,15 +59,15 @@
 - No observability backend (metrics/traces/log aggregation), load test, or alerting exists yet; these are Phase 7 scope. Health endpoints report outbox/queue state only.
 - No cloud resources, managed broker, Terraform, or deployment were created or applied.
 
-## Required follow-up (hosted CI)
+## Required follow-up (main-only GitHub integration)
 
-1. Run the API job with `runIntegrationTests=true` and record the exact outcome, including Flyway V1–V5 startup and all event integration cases.
-2. Fix any runtime failures before claiming Phase 6 verified; re-run until green.
-3. Run `docker compose config` and, where feasible, `docker compose up --build` to verify RabbitMQ wiring and the messaging health group.
-4. Run secret/dependency scans and record results; add Phase 7 observability rather than retrofitting it here.
+1. Restore GitHub CLI authentication and inspect existing pull requests/checks.
+2. Close any open pull requests and remove obsolete feature branches only after their commits are verified on `main`.
+3. Push Phase 6 directly to `main` after required local checks pass; allow the push-triggered workflow to run and do not bypass branch protection or failed checks.
+4. Confirm Gitleaks and OSV jobs complete successfully against the pushed `main` commit, then address any failed check with a corrective commit.
 
 ## Git state
 
-- Branch created from `main` at `4a1b237`; implementation commit `28f5dcc`.
+- Branch created from `main` at `4a1b237`; implementation commit `28f5dcc`; local regression corrections are currently uncommitted.
 - No force-push, history rewrite, cloud provisioning, or deployment performed.
-- PR URL and hosted CI URL are recorded in the PR and final handoff.
+- Hosted checks and pull request state are not verified in this report.

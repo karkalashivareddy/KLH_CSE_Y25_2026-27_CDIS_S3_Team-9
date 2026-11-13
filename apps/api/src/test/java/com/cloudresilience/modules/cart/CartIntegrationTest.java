@@ -137,7 +137,8 @@ class CartIntegrationTest {
             start.countDown();
             var results = new java.util.ArrayList<CartService.CartView>();
             for (var task : created) results.add(task.get(15, TimeUnit.SECONDS));
-            assertThat(results).extracting(CartService.CartView::cartId).doesNotHaveDuplicates();
+            // All concurrent adds converge on the single ACTIVE cart for this customer.
+            assertThat(results).extracting(CartService.CartView::cartId).containsOnly(carts.get(customerId).cartId());
             var result = carts.get(customerId);
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().getFirst().quantity()).isEqualTo(8);

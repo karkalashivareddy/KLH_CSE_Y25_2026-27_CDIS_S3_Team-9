@@ -17,6 +17,7 @@ import com.cloudresilience.modules.orders.application.CheckoutService;
 import com.cloudresilience.modules.orders.application.CheckoutTransactionService;
 import com.cloudresilience.modules.orders.application.OrderQueryService;
 import com.cloudresilience.modules.orders.application.OrderWorkflowService;
+import com.cloudresilience.modules.orders.domain.IllegalOrderTransitionException;
 import com.cloudresilience.modules.orders.domain.OrderStatus;
 import com.cloudresilience.modules.orders.domain.PaymentStatus;
 import java.math.BigDecimal;
@@ -241,8 +242,8 @@ class OrderIntegrationTest {
         assertThat(queries.customerPayment(customer, cancelled.id()).status()).isEqualTo(PaymentStatus.VOIDED);
         assertThat(jdbc.queryForObject("SELECT quantity_reserved FROM inventory WHERE product_id=?", Long.class, product)).isZero();
         assertThat(jdbc.queryForObject("SELECT status FROM inventory_reservations WHERE order_id=?", String.class, cancelled.id())).isEqualTo("RELEASED");
-        assertThat(catchThrowableOfType(() -> workflow.cancelCustomerOrder(customer, cancelled.id(), "again"), ResponseStatusException.class)
-                .getStatusCode().value()).isEqualTo(409);
+        assertThat(catchThrowableOfType(() -> workflow.cancelCustomerOrder(customer, cancelled.id(), "again"),
+                IllegalOrderTransitionException.class)).isNotNull();
 
         // A second fixture/order demonstrates the consume transition independently.
         UUID processingCustomer = createUser("processing");
@@ -253,8 +254,8 @@ class OrderIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT quantity_on_hand FROM inventory WHERE product_id=?", Long.class, product)).isEqualTo(7L);
         assertThat(jdbc.queryForObject("SELECT quantity_reserved FROM inventory WHERE product_id=?", Long.class, product)).isZero();
         assertThat(jdbc.queryForObject("SELECT status FROM inventory_reservations WHERE order_id=?", String.class, processing.id())).isEqualTo("COMMITTED");
-        assertThat(catchThrowableOfType(() -> workflow.transitionAdmin(admin, processing.id(), OrderStatus.PROCESSING, "repeat"), ResponseStatusException.class)
-                .getStatusCode().value()).isEqualTo(409);
+        assertThat(catchThrowableOfType(() -> workflow.transitionAdmin(admin, processing.id(), OrderStatus.PROCESSING, "repeat"),
+                IllegalOrderTransitionException.class)).isNotNull();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM inventory_movements WHERE reference_id=(SELECT id FROM inventory_reservations WHERE order_id=?) AND movement_type='ORDER_COMMIT'",
                 Integer.class, processing.id())).isEqualTo(1);
         assertThat(processingCart).isNotNull();

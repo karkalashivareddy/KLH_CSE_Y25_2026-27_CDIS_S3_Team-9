@@ -120,19 +120,21 @@ class IdentityIntegrationTest {
                 .andExpect(jsonPath("$.email").value("customer@example.com"))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist())
                 .andReturn();
-        MockHttpSession session = (MockHttpSession) login.getRequest().getSession(false);
-        assertThat(session).isNotNull();
+        Cookie authenticatedSessionCookie = java.util.Arrays.stream(login.getResponse().getCookies())
+                .filter(cookie -> cookie.getName().equals("JSESSIONID") || cookie.getName().equals("SESSION"))
+                .findFirst().orElse(null);
+        assertThat(authenticatedSessionCookie).isNotNull();
 
-        mvc.perform(get("/api/v1/auth/me").session(session))
+        mvc.perform(get("/api/v1/auth/me").cookie(authenticatedSessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roles").value(org.hamcrest.Matchers.contains("CUSTOMER")));
-        mvc.perform(get("/api/v1/admin/access-check").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/access-check").cookie(authenticatedSessionCookie)).andExpect(status().isForbidden());
 
-        Csrf logoutCsrf = fetchCsrf(session);
-        mvc.perform(post("/api/v1/auth/logout").session(session).cookie(logoutCsrf.cookie())
+        Csrf logoutCsrf = fetchCsrf(null);
+        mvc.perform(post("/api/v1/auth/logout").cookie(authenticatedSessionCookie, logoutCsrf.cookie())
                         .header(logoutCsrf.headerName(), logoutCsrf.token()))
                 .andExpect(status().isNoContent());
-        mvc.perform(get("/api/v1/auth/me").session(session)).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/auth/me").cookie(authenticatedSessionCookie)).andExpect(status().isUnauthorized());
 
         UUID adminId = UUID.randomUUID();
         jdbc.update("INSERT INTO users (id,email,password_hash,first_name,last_name,enabled,account_locked,created_at,updated_at) VALUES (?,?,?,?,?,true,false,?,?)",
@@ -146,7 +148,11 @@ class IdentityIntegrationTest {
                                 {"email":"admin@example.com","password":"test-admin-passphrase"}
                                 """))
                 .andExpect(status().isOk()).andReturn();
-        mvc.perform(get("/api/v1/admin/access-check").session((MockHttpSession) adminLogin.getRequest().getSession(false)))
+        Cookie adminSessionCookie = java.util.Arrays.stream(adminLogin.getResponse().getCookies())
+                .filter(cookie -> cookie.getName().equals("JSESSIONID") || cookie.getName().equals("SESSION"))
+                .findFirst().orElse(null);
+        assertThat(adminSessionCookie).isNotNull();
+        mvc.perform(get("/api/v1/admin/access-check").cookie(adminSessionCookie))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.authorization").value("ADMIN access granted"));
 
         assertThat(registration.getResponse().getStatus()).isEqualTo(201);

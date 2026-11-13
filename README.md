@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 6 is implemented on `feature/phase-6-event-driven-processing`; local unit checks pass and Docker-dependent verification is delegated to hosted CI.** Phases 1–5 are integrated on `main`. Phase 6 adds a transactional outbox, versioned order events, RabbitMQ retry/dead-letter topology, idempotent notification and activity consumers, and operator notification/dead-letter APIs. Docker-backed PostgreSQL/RabbitMQ tests are skipped locally because no Docker engine is available; they are not passes. No cloud deployment, managed broker, or production e-commerce operation is claimed.
+> **Status: Phase 6 implementation and local Docker-backed verification pass on `feature/phase-6-event-driven-processing`; hosted CI and GitHub integration are pending.** Phases 1–5 are integrated on `main`. Phase 6 adds a transactional outbox, versioned order events, RabbitMQ retry/dead-letter topology, idempotent notification and activity consumers, and operator notification/dead-letter APIs. The backend suite ran 64 tests with 0 failures and 0 skips using Testcontainers; hosted checks have not been verified. No cloud deployment, managed broker, or production e-commerce operation is claimed.
 
 ## Product and target architecture
 
@@ -25,7 +25,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
-| Order runtime verification | PostgreSQL/Redis/RabbitMQ-backed checkout, concurrency, rollback, ownership, migration and event tests skipped locally: Docker unavailable |
+| Order and event runtime verification | PostgreSQL/Redis/RabbitMQ-backed checkout, concurrency, rollback, ownership, migration and event tests pass locally (64 tests, 0 skipped) |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 

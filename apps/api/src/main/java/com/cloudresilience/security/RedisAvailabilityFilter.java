@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,7 +21,7 @@ public class RedisAvailabilityFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             chain.doFilter(request, response);
-        } catch (RedisConnectionFailureException | RedisSystemException unavailable) {
+        } catch (RedisConnectionFailureException | RedisSystemException | QueryTimeoutException unavailable) {
             if (!response.isCommitted()) {
                 ApiErrorWriter.write(request, response, mapper, 503, "Service Unavailable",
                         "Shared session storage is temporarily unavailable");

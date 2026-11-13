@@ -1,6 +1,7 @@
 package com.cloudresilience.modules.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.cloudresilience.CloudResilienceApplication;
 import java.net.URI;
@@ -8,12 +9,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.time.Duration;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +33,6 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"app.messaging.enabled=false", "app.outbox.publisher.enabled=false"})
 @Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "runIntegrationTests", matches = "true")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SharedSessionIntegrationTest {
     private static final String NAMESPACE = "cloudresilience:phase4-test";
     private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -46,7 +45,6 @@ class SharedSessionIntegrationTest {
         p.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         p.add("spring.datasource.username", POSTGRES::getUsername);
         p.add("spring.datasource.password", POSTGRES::getPassword);
-        p.add("spring.session.store-type", () -> "redis");
         p.add("spring.session.redis.namespace", () -> NAMESPACE);
         p.add("spring.data.redis.host", REDIS::getHost);
         p.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
@@ -57,14 +55,12 @@ class SharedSessionIntegrationTest {
     @Autowired PasswordEncoder passwords;
     @Autowired ObjectMapper mapper;
 
-    @BeforeAll
-    void startIndependentApiInstance() { instanceB = startInstanceB(); }
-
     @AfterAll
-    void stopIndependentApiInstance() { if (instanceB != null) instanceB.close(); }
+    static void stopIndependentApiInstance() { if (instanceB != null) instanceB.close(); }
 
     @Test
     void authenticatedSessionIsSharedAcrossRestartLogoutAndExpiration() throws Exception {
+        instanceB = startInstanceB();
         String email = "shared-" + UUID.randomUUID() + "@example.test";
         UUID user = UUID.randomUUID();
         jdbc.update("INSERT INTO users(id,email,password_hash,first_name,last_name,enabled,account_locked) VALUES(?,?,?,?,?,true,false)",
@@ -73,7 +69,12 @@ class SharedSessionIntegrationTest {
 
         SessionCookie initial = login(portA, email);
         assertThat(getMe(portA, initial).statusCode()).isEqualTo(200);
-        assertThat(getMe(portB(), initial).statusCode()).isEqualTo(200);
+        HttpResponse<String> sharedSessionResponse = getMe(portB(), initial);
+        var redisKeys = REDIS.execInContainer("redis-cli", "KEYS", "*").getStdout();
+        assertThat(sharedSessionResponse.statusCode()).withFailMessage(
+                "Shared session response: %s; cookie=%s; namespace=%s; redisKeys=%s",
+                sharedSessionResponse.body(), initial.name(), instanceB.getEnvironment().getProperty("spring.session.redis.namespace"), redisKeys)
+                .isEqualTo(200);
 
         instanceB.close();
         instanceB = startInstanceB();
@@ -87,24 +88,28 @@ class SharedSessionIntegrationTest {
 
         SessionCookie expiring = login(portA, email);
         assertThat(getMe(portB(), expiring).statusCode()).isEqualTo(200);
-        String key = NAMESPACE + ":sessions:" + expiring.value();
+        String keys = REDIS.execInContainer("redis-cli", "KEYS", "*").getStdout().trim();
+        String storedSessionId = new String(Base64.getUrlDecoder().decode(expiring.value()), StandardCharsets.UTF_8);
+        String key = keys.lines().filter(candidate -> candidate.startsWith("spring:session:sessions:")
+                && candidate.endsWith(storedSessionId)).findFirst()
+                .orElseThrow(() -> new AssertionError("Redis session key not found for cookie " + expiring.name() + ": " + keys));
         // Force the persisted server-side TTL to a short interval, then assert the repository rejects it.
         var redisCli = REDIS.execInContainer("redis-cli", "PEXPIRE", key, "250");
         assertThat(redisCli.getExitCode()).isZero();
-        Thread.sleep(350); // Wait past the explicitly set Redis TTL without touching the session.
-        HttpResponse<String> expired = getMe(portA, expiring);
-        assertThat(expired.statusCode()).as("Redis TTL expiration invalidates authentication").isEqualTo(401);
+        assertThat(redisCli.getStdout().trim()).isEqualTo("1");
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(
+                REDIS.execInContainer("redis-cli", "EXISTS", key).getStdout().trim()).isEqualTo("0"));
+        assertThat(getMe(portA, expiring).statusCode()).as("Redis TTL expiration invalidates authentication").isEqualTo(401);
     }
 
-    private ConfigurableApplicationContext startInstanceB() {
+    private static ConfigurableApplicationContext startInstanceB() {
         return new SpringApplicationBuilder(CloudResilienceApplication.class)
-                .properties("server.port=0", "spring.datasource.url=" + POSTGRES.getJdbcUrl(),
-                        "spring.datasource.username=" + POSTGRES.getUsername(),
-                        "spring.datasource.password=" + POSTGRES.getPassword(), "spring.flyway.enabled=false",
-                        "spring.session.store-type=redis", "spring.session.redis.namespace=" + NAMESPACE,
-                        "spring.data.redis.host=" + REDIS.getHost(),
-                        "spring.data.redis.port=" + REDIS.getMappedPort(6379))
-                .run();
+                .run("--server.port=0", "--spring.datasource.url=" + POSTGRES.getJdbcUrl(),
+                        "--spring.datasource.username=" + POSTGRES.getUsername(),
+                        "--spring.datasource.password=" + POSTGRES.getPassword(), "--spring.flyway.enabled=false",
+                        "--spring.session.redis.namespace=" + NAMESPACE,
+                        "--spring.data.redis.host=" + REDIS.getHost(),
+                        "--spring.data.redis.port=" + REDIS.getMappedPort(6379));
     }
 
     private int portB() { return instanceB.getEnvironment().getProperty("local.server.port", Integer.class); }

@@ -15,7 +15,6 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 20s
   session:
-    store-type: redis
     timeout: ${APP_SESSION_TIMEOUT:30m}
     redis:
       namespace: ${APP_SESSION_REDIS_NAMESPACE:cloudresilience:sessions}

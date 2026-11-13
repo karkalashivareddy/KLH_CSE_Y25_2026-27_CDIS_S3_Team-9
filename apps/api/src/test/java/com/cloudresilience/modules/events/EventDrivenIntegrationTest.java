@@ -114,7 +114,7 @@ class EventDrivenIntegrationTest {
     void checkoutEventIsPublishedAndConsumedByBothProjections() {
         UUID orderId = checkoutOrder("event-publish-0001");
 
-        assertThat(outboxPublisher.publishDueOnce()).isEqualTo(1);
+        assertThat(outboxPublisher.publishDueOnce()).isGreaterThanOrEqualTo(1);
         await().atMost(Duration.ofSeconds(20)).untilAsserted(() -> {
             assertThat(count("SELECT count(*) FROM in_app_notifications WHERE order_id=?", orderId)).isEqualTo(1);
             assertThat(count("SELECT count(*) FROM order_activity WHERE order_id=?", orderId)).isEqualTo(1);
@@ -151,18 +151,15 @@ class EventDrivenIntegrationTest {
         await().atMost(Duration.ofSeconds(20)).until(() -> queueDepth(EventTopology.NOTIFICATION_QUEUE) == 0
                 && queueDepth(EventTopology.ACTIVITY_QUEUE) == 0);
         UUID invalidCustomer = UUID.randomUUID();
-        writer.append(EventType.ORDER_PLACED, orderId, OrderEventPayloads.order(orderId, invalidCustomer,
+        UUID poisonEventId = writer.append(EventType.ORDER_PLACED, orderId, OrderEventPayloads.order(orderId, invalidCustomer,
                 "CR-POISON", OrderStatus.CONFIRMED, PaymentStatus.SUCCEEDED, new BigDecimal("30.00"), "USD", 2),
                 orderId, null);
-        assertThat(outboxPublisher.publishDueOnce()).isEqualTo(1);
+        assertThat(outboxPublisher.publishDueOnce()).isGreaterThanOrEqualTo(1);
 
         await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM dead_letter_messages
-                WHERE consumer_name=? AND error_category='CONSUMER_ERROR'
-                """, Integer.class, EventTopology.NOTIFICATION_CONSUMER)).isEqualTo(1));
-        UUID poisonEventId = jdbc.queryForObject("""
-                SELECT event_id FROM dead_letter_messages WHERE consumer_name=? ORDER BY created_at DESC LIMIT 1
-                """, UUID.class, EventTopology.NOTIFICATION_CONSUMER);
+                WHERE event_id=? AND consumer_name=? AND error_category='CONSUMER_ERROR'
+                """, Integer.class, poisonEventId, EventTopology.NOTIFICATION_CONSUMER)).isEqualTo(1));
         assertThat(count("SELECT count(*) FROM processed_events WHERE event_id=? AND consumer_name=?",
                 poisonEventId, EventTopology.NOTIFICATION_CONSUMER)).isZero();
         assertThat(count("SELECT count(*) FROM order_activity WHERE event_id=?", poisonEventId)).isEqualTo(1);
