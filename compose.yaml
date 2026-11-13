@@ -21,6 +21,12 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-cloudresilience}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-local-only-change-me}
+      APP_MESSAGING_ENABLED: ${APP_MESSAGING_ENABLED:-true}
+      APP_OUTBOX_PUBLISHER_ENABLED: ${APP_OUTBOX_PUBLISHER_ENABLED:-true}
       APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
       APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
     ports:
@@ -29,6 +35,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
@@ -51,6 +59,12 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-cloudresilience}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-local-only-change-me}
+      APP_MESSAGING_ENABLED: ${APP_MESSAGING_ENABLED:-true}
+      APP_OUTBOX_PUBLISHER_ENABLED: ${APP_OUTBOX_PUBLISHER_ENABLED:-true}
       APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
       APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
     ports:
@@ -59,6 +73,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
@@ -105,6 +121,26 @@ services:
     networks: [data]
     restart: unless-stopped
 
+  rabbitmq:
+    image: rabbitmq:4.0-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-cloudresilience}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-local-only-change-me}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks: [data]
+    restart: unless-stopped
+
 networks:
   application:
   data:
@@ -113,3 +149,4 @@ networks:
 volumes:
   postgres-data:
   redis-data:
+  rabbitmq-data:

@@ -1,0 +1,7 @@
+# ADR-032: Idempotent consumers with a transactional inbox
+
+- **Status:** Accepted for Phase 6
+- **Context:** At-least-once delivery means duplicates are normal, especially after publisher or consumer crashes. Side effects such as creating a notification or an activity row must not be duplicated.
+- **Decision:** Every consumer runs under a shared handler that decodes the envelope, validates the type/version, and inside one database transaction inserts `processed_events(event_id, consumer_name)` with `ON CONFLICT DO NOTHING` before applying its effect. If the inbox row already exists the effect is skipped. The broker message is acknowledged only after the transaction commits. A failed effect rolls back the inbox row, allowing retry. Exhausted or non-retryable messages are written to `dead_letter_messages`, and operator replay publishes first and then records `dead_letter_replays` and `REPLAYED`; replay is therefore also deduplicated by the inbox.
+- **Consequences:** Duplicate delivery produces one logical effect per consumer, and a crash before commit is safe to redeliver. The inbox grows without bound until a retention job is added. Ack-after-commit can cause duplicate redelivery (safe by design). There is no exactly-once claim.
+- **Rejected alternatives:** Consumer-side upserts only (not general across side effects); deduplication cache in Redis (extra failure mode and not transactional with the effect); exactly-once broker features (not available or not justified).

@@ -31,7 +31,7 @@ import java.sql.Timestamp;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@SpringBootTest
+@SpringBootTest(properties = {"app.messaging.enabled=false", "app.outbox.publisher.enabled=false"})
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "runIntegrationTests", matches = "true")

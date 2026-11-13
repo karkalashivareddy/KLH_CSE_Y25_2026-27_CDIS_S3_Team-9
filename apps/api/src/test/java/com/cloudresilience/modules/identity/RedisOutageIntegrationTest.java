@@ -18,7 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"app.messaging.enabled=false", "app.outbox.publisher.enabled=false"})
 @Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "runIntegrationTests", matches = "true")
 class RedisOutageIntegrationTest {

@@ -44,7 +44,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
+@SpringBootTest(properties = {"app.messaging.enabled=false", "app.outbox.publisher.enabled=false"})
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "runIntegrationTests", matches = "true")
@@ -126,6 +126,34 @@ class OrderIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT quantity_reserved FROM inventory WHERE product_id=?", Long.class, second)).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM customer_orders WHERE customer_id=?", Integer.class, customer)).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM checkout_idempotency WHERE customer_id=?", Integer.class, customer)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE aggregate_id NOT IN (SELECT id FROM customer_orders)",
+                Integer.class)).isZero();
+    }
+
+    @Test
+    void orderLifecycleEmitsMinimalOutboxEventsInTheSameCommit() {
+        var order = checkout.checkout(customer, "order-events-0001", request(product, 2));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE aggregate_id=? AND event_type='OrderPlaced'",
+                Integer.class, order.id())).isEqualTo(1);
+        String payload = jdbc.queryForObject("SELECT payload::text FROM outbox_events WHERE aggregate_id=? AND event_type='OrderPlaced'",
+                String.class, order.id());
+        assertThat(payload).contains(order.orderNumber()).contains("CONFIRMED")
+                .doesNotContain("@example.test").doesNotContain("password").doesNotContain("JSESSIONID")
+                .doesNotContain("csrf");
+
+        workflow.cancelCustomerOrder(customer, order.id(), "Customer changed mind");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM outbox_events WHERE aggregate_id=? AND event_type='OrderCancelled'",
+                Integer.class, order.id())).isEqualTo(1);
+
+        UUID lifecycleCustomer = createUser("lifecycle");
+        createCart(lifecycleCustomer, product, 1);
+        var lifecycle = checkout.checkout(lifecycleCustomer, "order-lifecycle-0001", request(product, 1));
+        workflow.transitionAdmin(admin, lifecycle.id(), OrderStatus.PROCESSING, "packed");
+        workflow.transitionAdmin(admin, lifecycle.id(), OrderStatus.SHIPPED, "handed to carrier");
+        workflow.transitionAdmin(admin, lifecycle.id(), OrderStatus.DELIVERED, "delivered");
+        assertThat(jdbc.query("SELECT event_type FROM outbox_events WHERE aggregate_id=? ORDER BY created_at,event_type",
+                (rs, row) -> rs.getString(1), lifecycle.id()))
+                .containsExactly("OrderPlaced", "OrderProcessingStarted", "OrderShipped", "OrderDelivered");
     }
 
     @Test

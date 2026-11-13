@@ -60,3 +60,18 @@ All customer routes require an authenticated CUSTOMER session and CSRF token for
 | PATCH | `/api/v1/admin/orders/{orderId}/status` | ADMIN fulfillment transition; body `{ "status": "PROCESSING|SHIPPED|DELIVERED|CANCELLED", "reason": "optional" }` |
 
 Payment simulator outcomes are set via `APP_PAYMENT_SIMULATOR_OUTCOME` (`SUCCESS` by default, `DECLINED`, `TIMEOUT`, or `FAILURE`). Cancellation of a confirmed order voids the simulated payment; it does not issue a real refund. Pending simulator requests cannot be manually cancelled because their result is unknown. Reservation expiry and real payment providers are not implemented.
+
+## Events, notifications, and dead letters (Phase 6)
+
+Order lifecycle changes write a versioned event to the PostgreSQL transactional outbox in the same transaction as the business change. A scheduled publisher leases due rows, publishes persistent messages to RabbitMQ with publisher confirms, and records `PUBLISHED` only after confirmation. Delivery is at-least-once: consumers deduplicate with an inbox row (`processed_events`) committed together with the consumer's effect. These routes expose the durable projections and operator controls; they do not prove broker delivery.
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/notifications?page=0&size=20` | CUSTOMER | List own in-app notifications produced by the notification consumer |
+| POST | `/api/v1/notifications/{notificationId}/read` | CUSTOMER | Mark one own notification read; 404 if not owned |
+| GET | `/api/v1/admin/events/outbox` | ADMIN | Outbox status counts and oldest pending age |
+| GET | `/api/v1/admin/events/dead-letters?status=QUARANTINED&page=0&size=20` | ADMIN | List quarantined or replayed messages |
+| POST | `/api/v1/admin/events/dead-letters/{deadLetterId}/replay` | ADMIN | Controlled replay; requires `{ "reason": "..." }` |
+| GET | `/api/v1/admin/events/orders/{orderId}/activity` | ADMIN | Activity projection for one order |
+
+Operational health groups: `/actuator/health/readiness` includes PostgreSQL and Redis; `/actuator/health/messaging` includes the outbox backlog (`outbox`), consumer queue depth (`eventQueues`) and broker connectivity (`rabbit`). A broker outage leaves committed events `PENDING`; it does not roll back orders. Outbox backlog, queue depth, dead-letter counts, retry counts, and consumer lag (outbox oldest pending age) are the primary Phase 6 signals. See [event-driven architecture](../03-architecture/EVENT_DRIVEN_ARCHITECTURE.md) and [event catalog](../03-architecture/EVENT_CATALOG.md).

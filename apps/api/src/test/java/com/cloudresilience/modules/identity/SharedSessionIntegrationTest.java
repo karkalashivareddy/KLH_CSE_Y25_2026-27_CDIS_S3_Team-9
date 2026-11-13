@@ -30,7 +30,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"app.messaging.enabled=false", "app.outbox.publisher.enabled=false"})
 @Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "runIntegrationTests", matches = "true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
