@@ -1,0 +1,9 @@
+aws_region         = "us-east-1"
+owner_tag          = "team-9"
+postgres_engine_version = "17.6"
+api_image_tag      = "0000000000000000000000000000000000000000"
+web_image_tag      = "0000000000000000000000000000000000000000"
+acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+
+# Replace all examples with real account-specific values before planning.
+# The example image digests and certificate ARN intentionally do not reference real resources.

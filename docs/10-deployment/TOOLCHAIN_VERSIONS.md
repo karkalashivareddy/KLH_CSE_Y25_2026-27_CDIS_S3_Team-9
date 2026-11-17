@@ -18,7 +18,7 @@
 | PostgreSQL | 17.7-alpine3.22 | Explicit minor image tag for local persistence; production patch digest should be pinned by CI/release process. |
 | Redis | 8.4.0-alpine3.22 | Explicit image tag for local persistence; production patch digest should be pinned by CI/release process. |
 | Docker Engine | Not available during Phase 4 execution | Docker CLI exists, but the Linux engine named pipe was unavailable; Compose/Testcontainers runtime gates are BLOCKED. |
-| Terraform | Not selected for install | No valid Terraform configuration in this phase; binary absent, no IaC claim. |
+| Terraform | 1.17.1 | Pinned in Phase 8 CI; local format/init/validate run with 1.17.1. Provider selections are exact in `infrastructure/terraform/environments/dev/.terraform.lock.hcl`. |
 
 Package versions are exact in `apps/web/package.json`; Maven parent, plugin versions, Java release, and container tags are explicit in build files. npm lockfile must be generated and committed as part of validation. Maven transitive versions are managed by pinned Spring Boot BOM. Upgrade after compatibility tests and review release/security notes.
 

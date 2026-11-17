@@ -1,9 +1,8 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [main, 'feature/**']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -29,6 +28,16 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Build unprivileged web container
+        run: docker build --tag cloudresilience-web:ci .
+      - name: Scan web image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: cloudresilience-web:ci
+          version: v0.76.2
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: '1'
 
   api:
     name: API tests and package
@@ -41,6 +50,39 @@ jobs:
           java-version: '25'
           cache: maven
       - run: mvn -B -ntp -f apps/api/pom.xml verify -DrunIntegrationTests=true
+      - name: Build API container
+        run: docker build --tag cloudresilience-api:ci ./apps/api
+      - name: Scan API image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: cloudresilience-api:ci
+          version: v0.76.2
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+  terraform:
+    name: Terraform validation and IaC scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+      - run: terraform fmt -check -recursive infrastructure/terraform
+      - run: terraform -chdir=infrastructure/terraform/environments/dev init -backend=false -input=false
+      - run: terraform -chdir=infrastructure/terraform/environments/dev validate
+      - uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
+        with:
+          tflint_version: v0.64.0
+      - run: tflint --chdir=infrastructure/terraform --init
+      - run: tflint --chdir=infrastructure/terraform --recursive
+      - uses: bridgecrewio/checkov-action@99bb2caf247dfd9f03cf984373bc6043d4e32ebf # v12.1347.0
+        with:
+          directory: infrastructure/terraform
+          framework: terraform
+          soft_fail: false
 
   secret-scan:
     name: Secret scan
