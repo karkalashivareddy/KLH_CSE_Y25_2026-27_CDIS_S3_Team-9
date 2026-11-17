@@ -1,11 +1,12 @@
-FROM node:24.13.0-alpine3.23 AS build
+FROM node:24.22.0-alpine3.24 AS build
 WORKDIR /workspace
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:1.29.5-alpine3.23
+FROM nginx:1.31.8-alpine3.24
+RUN apk upgrade --no-cache
 RUN mkdir -p /tmp/nginx /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp \
     /var/cache/nginx/fastcgi_temp /var/cache/nginx/uwsgi_temp /var/cache/nginx/scgi_temp \
     && chown -R 101:101 /tmp/nginx /var/cache/nginx

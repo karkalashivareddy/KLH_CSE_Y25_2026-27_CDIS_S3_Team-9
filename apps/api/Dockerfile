@@ -5,7 +5,8 @@ RUN mvn -q -ntp dependency:go-offline
 COPY src ./src
 RUN mvn -q -ntp verify
 
-FROM eclipse-temurin:25.0.2_10-jre-alpine-3.23
+FROM eclipse-temurin:25.0.5_8-jre-alpine-3.24
+RUN apk upgrade --no-cache
 RUN addgroup -S app && adduser -S -G app app
 WORKDIR /app
 COPY --from=build /workspace/target/cloudresilience-api-0.1.0-SNAPSHOT.jar app.jar
