@@ -1,13 +1,12 @@
 # Phase 6 event-driven processing implementation report
 
-**Status: Phase 6 implementation and local Docker-backed verification pass; main contains the work. Hosted CI needs a clean OSV rerun after dependency remediation.** No cloud resources were provisioned.
+**Status: Phase 6 implementation and local Docker-backed verification pass; hosted CI is green on `main`.** No cloud resources were provisioned.
 
 **Date:** 2026-11-17
 **Branch:** `main`
 **Base commit:** `4a1b237` (`main`, Phase 5 tip)  
 **Implementation commit:** `28f5dcc` (`feat: implement phase 6 event-driven order processing`)  
-**Main integration commit:** `0df399f` (`fix: validate Redis sessions and phase 6 integration`)
-**Current dependency remediation:** RabbitMQ Java client pinned to `5.37.1`; this change is being verified before push.
+**Main integration commits:** `0df399f` (verified regression fixes), `88d1a9c` (RabbitMQ dependency security fix)
 
 ## Scope delivered
 
@@ -38,8 +37,10 @@
 | `npm.cmd audit --audit-level=moderate` | **PASS** | 0 vulnerabilities |
 | `git diff --check` | **PASS** | no whitespace errors |
 | Gitleaks | **PASS (hosted)** | CI run 44022105540 secret-scan job passed |
-| OSV Maven scan | **FAIL on prior SHA; remediation pending rerun** | Run 44022105540 detected RabbitMQ client 5.30.0 advisories; dependency is now pinned to 5.37.1, and a new hosted result is required |
-| Hosted API/Web checks | **PASS (hosted)** | CI run 44022105540 API and Web jobs passed on `0df399f`; both have also passed locally |
+| OSV Maven scan | **PASS (hosted)** | CI run 44023777571 passed; RabbitMQ client is pinned to 5.37.1 and the open code-scanning alert list is empty |
+| Hosted API/Web checks | **PASS (hosted)** | CI run 44023777571 passed API integration and Web checks on `88d1a9c` |
+| Hosted Gitleaks | **PASS** | CI run 44023777571 secret-scan job passed |
+| Hosted CI | **PASS** | [Run 44023777571](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44023777571) tested exact `main` head `88d1a9c9cd376053a639a92b6472eacb09803eca`; all jobs succeeded |
 
 ## Test intent added
 
@@ -52,7 +53,6 @@
 
 ## Blockers and limitations
 
-- The hosted OSV job failed against `0df399f` because Spring Boot resolved vulnerable `com.rabbitmq:amqp-client:5.30.0`; this is pinned to 5.37.1 in the pending remediation commit, which still needs its own hosted scan result.
 - The full Compose application stack was not started; only Compose syntax/configuration validation ran.
 - Delivery is at-least-once; there is no exactly-once or ordered delivery claim. Events for one aggregate may be published out of order under retries.
 - The publisher runs in the API process. There is no dedicated worker, leader election, inbox retention/archival, automatic DLQ drain, or bulk replay.
@@ -61,14 +61,14 @@
 - No observability backend (metrics/traces/log aggregation), load test, or alerting exists yet; these are Phase 7 scope. Health endpoints report outbox/queue state only.
 - No cloud resources, managed broker, Terraform, or deployment were created or applied.
 
-## Required follow-up (main-only GitHub integration)
+## GitHub integration and cleanup
 
-1. Push the local `5.37.1` remediation commit to `main` and verify the triggered workflow, especially OSV.
-2. All currently open PRs: **none**. PR #2 is merged; PR #1 is closed. GitHub retains closed/merged PR records; those records cannot be deleted.
-3. Remove the integrated phase feature refs after verifying their tips are ancestors of remote `main`.
+1. All currently open PRs: **none**. PR #2 is merged and PR #1 is closed. GitHub preserves closed/merged PR records; it does not support deleting those records.
+2. The Phase 4, Phase 5 and Phase 6 feature branches were removed after verifying their tips were ancestors of `origin/main`.
 
 ## Git state
 
-- `main` was pushed to `0df399f`; local Docker-backed backend verification is green. The RabbitMQ 5.37.1 pin and corresponding report update are the remaining local changes.
+- At verification time, local and remote branches contained only `main`, at `88d1a9c9cd376053a639a92b6472eacb09803eca`. The report/README update is documentation-only.
+- Working tree is clean at report time. CI run 44023777571 is green; no open PRs or OSV code-scanning alerts remain.
 - No force-push, history rewrite, cloud provisioning, or deployment performed.
 - No open PRs were found; GitHub reports PR #2 merged and PR #1 closed.

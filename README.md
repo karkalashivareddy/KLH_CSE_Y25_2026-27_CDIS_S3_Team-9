@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 6 is on `main`; local Docker-backed tests pass.** The main push workflow passed API, web, and secret scanning, but its OSV scan found advisories in the transitive RabbitMQ Java client 5.30.0. The client is now pinned to patched 5.37.1; the hosted OSV rerun is pending. No cloud deployment, managed broker, or production e-commerce operation is claimed.
+> **Status: Phase 6 is integrated on `main` at `88d1a9c`; local and hosted verification pass.** The backend Testcontainers suite passed 64 tests with 0 skipped; hosted API, web, Gitleaks, and OSV checks all passed, and no open OSV alerts remain. RabbitMQ Java client is pinned to patched 5.37.1. No cloud deployment, managed broker, or production e-commerce operation is claimed.
 
 ## Product and target architecture
 
