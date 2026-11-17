@@ -35,6 +35,7 @@ resource "aws_security_group" "redis" {
 }
 
 resource "aws_security_group" "broker" {
+  #checkov:skip=CKV2_AWS_5:Amazon MQ is created inside CloudFormation and attaches this group through its SecurityGroups property; the cross-stack reference is not visible to Checkov.
   name                   = "${local.name}-rabbitmq"
   description            = "AMQPS is reachable only from the ECS application security group."
   vpc_id                 = module.networking.vpc_id

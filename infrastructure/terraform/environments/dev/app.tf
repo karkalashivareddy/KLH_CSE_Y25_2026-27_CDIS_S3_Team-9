@@ -15,6 +15,10 @@ resource "aws_service_discovery_http_namespace" "application" {
 }
 
 resource "aws_s3_bucket" "alb_logs" {
+  #checkov:skip=CKV_AWS_18:This is the ALB access-log destination; recursive server access logging is intentionally disabled.
+  #checkov:skip=CKV_AWS_144:Cross-region log replication is a separate DR choice and is intentionally disabled for the cost-controlled dev environment.
+  #checkov:skip=CKV_AWS_19:Encryption is configured in the separate aws_s3_bucket_server_side_encryption_configuration resource below.
+  #checkov:skip=CKV_AWS_145:ALB log delivery uses S3-managed encryption; this delivery target is not configured for customer-managed KMS.
   bucket_prefix = "${local.name}-alb-logs-"
   force_destroy = false
   tags          = merge(local.common_tags, { Name = "${local.name}-alb-logs" })
@@ -35,6 +39,13 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
@@ -102,6 +113,49 @@ resource "aws_lb" "application" {
   depends_on = [aws_s3_bucket_policy.alb_logs]
 }
 
+resource "aws_wafv2_web_acl" "application" {
+  name  = "${local.name}-edge"
+  scope = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "AWSManagedCommonRules"
+    priority = 10
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${local.name}-common-rules"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "${local.name}-waf"
+    sampled_requests_enabled   = false
+  }
+
+  tags = local.common_tags
+}
+
+resource "aws_wafv2_web_acl_association" "application" {
+  resource_arn = aws_lb.application.arn
+  web_acl_arn  = aws_wafv2_web_acl.application.arn
+}
+
 resource "aws_lb_target_group" "web" {
   name                 = "${local.name}-web"
   port                 = 8080
@@ -160,6 +214,7 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_listener" "https" {
+  #checkov:skip=CKV_AWS_103:ELBSecurityPolicy-TLS13-1-2-2021-06 supports TLS 1.2 and TLS 1.3; the check does not recognize the combined policy name.
   load_balancer_arn = aws_lb.application.arn
   port              = 443
   protocol          = "HTTPS"
@@ -309,6 +364,10 @@ resource "aws_iam_role_policy" "web_execution" {
 
 resource "aws_ecs_cluster" "application" {
   name = local.name
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
   tags = local.common_tags
 }
 

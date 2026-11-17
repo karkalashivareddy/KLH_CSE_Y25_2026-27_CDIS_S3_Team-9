@@ -6,6 +6,12 @@ resource "aws_vpc" "this" {
   tags = merge(var.tags, { Name = "${var.name}-vpc" })
 }
 
+resource "aws_default_security_group" "this" {
+  vpc_id  = aws_vpc.this.id
+  ingress = []
+  egress  = []
+}
+
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
   tags   = merge(var.tags, { Name = "${var.name}-igw" })
@@ -89,6 +95,10 @@ resource "aws_flow_log" "this" {
 }
 
 resource "aws_s3_bucket" "flow_logs" {
+  #checkov:skip=CKV_AWS_18:This is the VPC flow-log destination; recursive server access logging is intentionally disabled.
+  #checkov:skip=CKV_AWS_144:Cross-region log replication is a separate DR choice and is intentionally disabled for the cost-controlled dev environment.
+  #checkov:skip=CKV_AWS_19:Encryption is configured in the separate aws_s3_bucket_server_side_encryption_configuration resource below.
+  #checkov:skip=CKV_AWS_145:VPC flow logs use S3-managed encryption; this delivery target is not configured for customer-managed KMS.
   bucket_prefix = "${var.name}-vpc-flow-logs-"
   force_destroy = false
   tags          = merge(var.tags, { Name = "${var.name}-vpc-flow-logs" })
@@ -109,6 +119,13 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "flow_logs" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "flow_logs" {
+  bucket = aws_s3_bucket.flow_logs.id
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 

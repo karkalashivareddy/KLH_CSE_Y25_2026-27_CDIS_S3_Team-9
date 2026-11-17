@@ -1,7 +1,14 @@
+resource "aws_sns_topic" "rabbitmq_stack_events" {
+  name              = "${local.name}-rabbitmq-stack-events"
+  kms_master_key_id = "alias/aws/sns"
+  tags              = local.common_tags
+}
+
 resource "aws_cloudformation_stack" "rabbitmq" {
   name               = "${local.name}-rabbitmq"
   on_failure         = "ROLLBACK"
   timeout_in_minutes = 60
+  notification_arns  = [aws_sns_topic.rabbitmq_stack_events.arn]
   template_body = jsonencode({
     AWSTemplateFormatVersion = "2010-09-09"
     Description              = "Private CloudResilience RabbitMQ broker with Secrets Manager password reference."

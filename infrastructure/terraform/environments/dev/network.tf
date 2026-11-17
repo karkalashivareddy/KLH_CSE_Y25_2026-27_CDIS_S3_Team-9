@@ -37,11 +37,13 @@ resource "aws_kms_alias" "application" {
 resource "aws_cloudwatch_log_group" "api" {
   name              = "/cloudresilience/${var.environment}/api"
   retention_in_days = 30
+  kms_key_id        = aws_kms_key.application.arn
   tags              = local.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "web" {
   name              = "/cloudresilience/${var.environment}/web"
   retention_in_days = 14
+  kms_key_id        = aws_kms_key.application.arn
   tags              = local.common_tags
 }

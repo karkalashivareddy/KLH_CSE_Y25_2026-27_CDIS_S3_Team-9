@@ -5,6 +5,7 @@ resource "aws_elasticache_subnet_group" "application" {
 }
 
 resource "aws_elasticache_replication_group" "application" {
+  #checkov:skip=CKV_AWS_31:Transit encryption and write-only auth_token_wo are enabled; Checkov does not recognize the provider's write-only token argument.
   replication_group_id       = "${local.name}-redis"
   description                = "CloudResilience distributed web-session store."
   engine                     = "redis"
