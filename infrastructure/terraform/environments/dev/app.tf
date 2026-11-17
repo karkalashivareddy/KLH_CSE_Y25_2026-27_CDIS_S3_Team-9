@@ -17,6 +17,7 @@ resource "aws_service_discovery_http_namespace" "application" {
 resource "aws_s3_bucket" "alb_logs" {
   #checkov:skip=CKV_AWS_18:This is the ALB access-log destination; recursive server access logging is intentionally disabled.
   #checkov:skip=CKV_AWS_144:Cross-region log replication is a separate DR choice and is intentionally disabled for the cost-controlled dev environment.
+  #checkov:skip=CKV_AWS_21:Versioning is enabled via separate aws_s3_bucket_versioning resource; Checkov does not correlate provider resources.
   #checkov:skip=CKV_AWS_19:Encryption is configured in the separate aws_s3_bucket_server_side_encryption_configuration resource below.
   #checkov:skip=CKV_AWS_145:ALB log delivery uses S3-managed encryption; this delivery target is not configured for customer-managed KMS.
   bucket_prefix = "${local.name}-alb-logs-"
@@ -142,6 +143,25 @@ resource "aws_wafv2_web_acl" "application" {
     }
   }
 
+  rule {
+    name     = "AWSManagedKnownBadInputs"
+    priority = 20
+    override_action {
+      none {}
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "${local.name}-known-bad-inputs"
+      sampled_requests_enabled   = false
+    }
+  }
+
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "${local.name}-waf"
@@ -154,6 +174,22 @@ resource "aws_wafv2_web_acl" "application" {
 resource "aws_wafv2_web_acl_association" "application" {
   resource_arn = aws_lb.application.arn
   web_acl_arn  = aws_wafv2_web_acl.application.arn
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "application" {
+  resource_arn            = aws_wafv2_web_acl.application.arn
+  log_destination_configs = [aws_cloudwatch_log_group.waf.arn]
+
+  redacted_fields {
+    single_header {
+      name = "authorization"
+    }
+  }
+  redacted_fields {
+    single_header {
+      name = "cookie"
+    }
+  }
 }
 
 resource "aws_lb_target_group" "web" {

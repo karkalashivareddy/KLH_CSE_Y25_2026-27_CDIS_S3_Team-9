@@ -97,6 +97,7 @@ resource "aws_flow_log" "this" {
 resource "aws_s3_bucket" "flow_logs" {
   #checkov:skip=CKV_AWS_18:This is the VPC flow-log destination; recursive server access logging is intentionally disabled.
   #checkov:skip=CKV_AWS_144:Cross-region log replication is a separate DR choice and is intentionally disabled for the cost-controlled dev environment.
+  #checkov:skip=CKV_AWS_21:Versioning is enabled via separate aws_s3_bucket_versioning resource; Checkov does not correlate provider resources.
   #checkov:skip=CKV_AWS_19:Encryption is configured in the separate aws_s3_bucket_server_side_encryption_configuration resource below.
   #checkov:skip=CKV_AWS_145:VPC flow logs use S3-managed encryption; this delivery target is not configured for customer-managed KMS.
   bucket_prefix = "${var.name}-vpc-flow-logs-"

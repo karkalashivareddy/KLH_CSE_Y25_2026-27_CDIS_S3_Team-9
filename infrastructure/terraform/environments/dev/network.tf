@@ -47,3 +47,10 @@ resource "aws_cloudwatch_log_group" "web" {
   kms_key_id        = aws_kms_key.application.arn
   tags              = local.common_tags
 }
+
+resource "aws_cloudwatch_log_group" "waf" {
+  name              = "aws-waf-logs-cloudresilience-${var.environment}"
+  retention_in_days = 30
+  kms_key_id        = aws_kms_key.application.arn
+  tags              = local.common_tags
+}
