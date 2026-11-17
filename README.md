@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 6 implementation and local Docker-backed verification pass on `feature/phase-6-event-driven-processing`; hosted CI and GitHub integration are pending.** Phases 1–5 are integrated on `main`. Phase 6 adds a transactional outbox, versioned order events, RabbitMQ retry/dead-letter topology, idempotent notification and activity consumers, and operator notification/dead-letter APIs. The backend suite ran 64 tests with 0 failures and 0 skips using Testcontainers; hosted checks have not been verified. No cloud deployment, managed broker, or production e-commerce operation is claimed.
+> **Status: Phase 6 is on `main`; local Docker-backed tests pass.** The main push workflow passed API, web, and secret scanning, but its OSV scan found advisories in the transitive RabbitMQ Java client 5.30.0. The client is now pinned to patched 5.37.1; the hosted OSV rerun is pending. No cloud deployment, managed broker, or production e-commerce operation is claimed.
 
 ## Product and target architecture
 
@@ -21,7 +21,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Product catalog and categories | Implemented in V2; public search/filter/pagination and admin management are API-backed |
 | Inventory adjustment, reservation and movement ledger | Implemented with transactional PostgreSQL row locks; concurrent final-unit integration test passes |
 | Redis integration | Phase 4: shared Spring Session backend; not a cart/cache store |
-| Customer shopping cart | Phase 4 implementation present; PostgreSQL integration verification not run in this environment |
+| Customer shopping cart | Phase 4 implementation present; PostgreSQL/Redis integration tests pass locally |
 | Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |

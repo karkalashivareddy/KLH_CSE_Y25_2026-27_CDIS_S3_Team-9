@@ -1,12 +1,13 @@
 # Phase 6 event-driven processing implementation report
 
-**Status: Phase 6 implementation and local Docker-backed verification pass; hosted CI and GitHub integration remain pending.** The verification below ran in the working tree after the listed regression fixes. No cloud resources were provisioned.
+**Status: Phase 6 implementation and local Docker-backed verification pass; main contains the work. Hosted CI needs a clean OSV rerun after dependency remediation.** No cloud resources were provisioned.
 
-**Date:** 2026-11-13  
-**Branch:** `feature/phase-6-event-driven-processing`  
+**Date:** 2026-11-17
+**Branch:** `main`
 **Base commit:** `4a1b237` (`main`, Phase 5 tip)  
 **Implementation commit:** `28f5dcc` (`feat: implement phase 6 event-driven order processing`)  
-**Report/docs follow-up commit:** this file's commit on the same branch (see PR history).
+**Main integration commit:** `0df399f` (`fix: validate Redis sessions and phase 6 integration`)
+**Current dependency remediation:** RabbitMQ Java client pinned to `5.37.1`; this change is being verified before push.
 
 ## Scope delivered
 
@@ -24,7 +25,7 @@
 
 | Check | Result | Evidence |
 |---|---|---|
-| `mvn -B -ntp -Dmaven.repo.local=<user-cache> -f apps/api/pom.xml verify -DrunIntegrationTests=true` | **PASS** | 64 tests, 64 passed, 0 skipped, 0 failures, 0 errors; packaged successfully on Java 25 with Docker 29.7.2 |
+| `mvn -B -ntp -Dmaven.repo.local=<user-cache> -f apps/api/pom.xml verify -DrunIntegrationTests=true` | **PASS** | 64 tests, 64 passed, 0 skipped, 0 failures, 0 errors against RabbitMQ client 5.37.1; Java 25, Docker 29.7.2 |
 | New unit tests | **PASS** | `EventEnvelopeCodecTest` 3, `EventTopologyTest` 3, `OutboxPublisherTest` 4 |
 | Docker-backed integration tests | **PASS** | All event, checkout, cart, inventory, identity, Redis outage, and shared-session cases executed; 0 skipped |
 | Flyway V1–V5 on PostgreSQL 17.7 | **PASS** | Applied and validated in Testcontainers |
@@ -36,8 +37,9 @@
 | Frontend `npm run build` | **PASS** | 29 modules transformed; production build written |
 | `npm.cmd audit --audit-level=moderate` | **PASS** | 0 vulnerabilities |
 | `git diff --check` | **PASS** | no whitespace errors |
-| Gitleaks / OSV Maven scan | **NOT RUN LOCALLY** | scanner CLIs are unavailable; hosted workflow has not been inspected |
-| Hosted CI (`runIntegrationTests=true`) | **NOT VERIFIED** | `gh` authentication token is invalid, so hosted run status could not be queried |
+| Gitleaks | **PASS (hosted)** | CI run 44022105540 secret-scan job passed |
+| OSV Maven scan | **FAIL on prior SHA; remediation pending rerun** | Run 44022105540 detected RabbitMQ client 5.30.0 advisories; dependency is now pinned to 5.37.1, and a new hosted result is required |
+| Hosted API/Web checks | **PASS (hosted)** | CI run 44022105540 API and Web jobs passed on `0df399f`; both have also passed locally |
 
 ## Test intent added
 
@@ -50,7 +52,7 @@
 
 ## Blockers and limitations
 
-- The hosted CI result and required hosted security jobs remain unverified because the configured GitHub CLI credential is invalid.
+- The hosted OSV job failed against `0df399f` because Spring Boot resolved vulnerable `com.rabbitmq:amqp-client:5.30.0`; this is pinned to 5.37.1 in the pending remediation commit, which still needs its own hosted scan result.
 - The full Compose application stack was not started; only Compose syntax/configuration validation ran.
 - Delivery is at-least-once; there is no exactly-once or ordered delivery claim. Events for one aggregate may be published out of order under retries.
 - The publisher runs in the API process. There is no dedicated worker, leader election, inbox retention/archival, automatic DLQ drain, or bulk replay.
@@ -61,13 +63,12 @@
 
 ## Required follow-up (main-only GitHub integration)
 
-1. Restore GitHub CLI authentication and inspect existing pull requests/checks.
-2. Close any open pull requests and remove obsolete feature branches only after their commits are verified on `main`.
-3. Push Phase 6 directly to `main` after required local checks pass; allow the push-triggered workflow to run and do not bypass branch protection or failed checks.
-4. Confirm Gitleaks and OSV jobs complete successfully against the pushed `main` commit, then address any failed check with a corrective commit.
+1. Push the local `5.37.1` remediation commit to `main` and verify the triggered workflow, especially OSV.
+2. All currently open PRs: **none**. PR #2 is merged; PR #1 is closed. GitHub retains closed/merged PR records; those records cannot be deleted.
+3. Remove the integrated phase feature refs after verifying their tips are ancestors of remote `main`.
 
 ## Git state
 
-- Branch created from `main` at `4a1b237`; implementation commit `28f5dcc`; local regression corrections are currently uncommitted.
+- `main` was pushed to `0df399f`; local Docker-backed backend verification is green. The RabbitMQ 5.37.1 pin and corresponding report update are the remaining local changes.
 - No force-push, history rewrite, cloud provisioning, or deployment performed.
-- Hosted checks and pull request state are not verified in this report.
+- No open PRs were found; GitHub reports PR #2 merged and PR #1 closed.
