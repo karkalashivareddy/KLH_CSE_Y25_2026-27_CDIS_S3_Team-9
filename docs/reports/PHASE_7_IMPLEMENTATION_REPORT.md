@@ -27,7 +27,7 @@
 | `npm.cmd audit --audit-level=moderate` | **PASS** | 0 vulnerabilities |
 | Compose config, both standard and observability/load-test profiles | **PASS** | `docker compose ... config --quiet` |
 | Local Compose stack | **PASS** | API, PostgreSQL, Redis, RabbitMQ, Prometheus, Grafana, Loki, Tempo, Collector, Alloy healthy/running; API readiness healthy |
-| Prometheus target and alert rules | **PASS** | API scrape `http://api:8081/actuator/prometheus` is `up`; `promtool check rules` found 7 valid rules; all alert rule health states `ok` |
+| Prometheus target and alert rules | **PASS** | Internal API scrape target is `up`; `promtool check rules` found 7 valid rules; all alert rule health states `ok` |
 | Dashboards | **PASS** | Grafana health API returned 200 and listed 8 provisioned dashboards |
 | Private metrics listener | **PASS** | Host-published API port does not serve `/actuator/prometheus`; internal Prometheus scrape succeeds |
 | Trace ingestion | **PASS** | Tempo returned real API/scheduled-task traces; RabbitMQ propagation integration test emits `traceparent` |
