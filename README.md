@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 6 is integrated; Phase 7 observability is implemented and locally verified on `main`; hosted checks are pending.** The Phase 7 backend Testcontainers suite passed 66 tests with 0 skipped. No cloud deployment or production operation is claimed.
+> **Status: Phases 6 and 7 are integrated and verified on `main`.** Phase 7 hosted CI passed 66 backend tests with 0 skipped, along with frontend, Gitleaks, and OSV checks. No cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
