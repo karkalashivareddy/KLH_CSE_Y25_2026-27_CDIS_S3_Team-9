@@ -26,12 +26,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import io.micrometer.tracing.Tracer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -79,6 +82,7 @@ class EventDrivenIntegrationTest {
     @Autowired DeadLetterService deadLetters;
     @Autowired RabbitTemplate rabbitTemplate;
     @Autowired AmqpAdmin amqpAdmin;
+    @Autowired Tracer tracer;
 
     private UUID customer;
     private UUID admin;
@@ -219,6 +223,27 @@ class EventDrivenIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT status FROM dead_letter_messages WHERE id=?", String.class, deadLetterId))
                 .isEqualTo("REPLAYED");
         assertThat(count("SELECT count(*) FROM dead_letter_replays WHERE dead_letter_id=?", deadLetterId)).isEqualTo(1);
+    }
+
+    @Test
+    void publisherAddsW3cTraceContextToRabbitMessage() {
+        Queue queue = new Queue("trace-probe-" + UUID.randomUUID(), false, true, true);
+        amqpAdmin.declareQueue(queue);
+        String routingKey = "trace.probe";
+        amqpAdmin.declareBinding(new Binding(queue.getName(), Binding.DestinationType.QUEUE,
+                EventTopology.EVENTS_EXCHANGE, routingKey, null));
+
+        var span = tracer.nextSpan().name("phase7-rabbit-propagation").start();
+        try (Tracer.SpanInScope ignored = tracer.withSpan(span)) {
+            rabbitTemplate.convertAndSend(EventTopology.EVENTS_EXCHANGE, routingKey, "trace-probe");
+        } finally {
+            span.end();
+        }
+
+        var message = rabbitTemplate.receive(queue.getName(), 5_000);
+        assertThat(message).isNotNull();
+        Object traceparent = message.getMessageProperties().getHeaders().get("traceparent");
+        assertThat(traceparent).as("W3C traceparent header").isNotNull().asString().contains(span.context().traceId());
     }
 
     private UUID checkoutOrder(String key) {

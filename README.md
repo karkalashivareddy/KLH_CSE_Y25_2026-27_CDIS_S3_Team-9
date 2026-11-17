@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phase 6 is integrated on `main` at `88d1a9c`; local and hosted verification pass.** The backend Testcontainers suite passed 64 tests with 0 skipped; hosted API, web, Gitleaks, and OSV checks all passed, and no open OSV alerts remain. RabbitMQ Java client is pinned to patched 5.37.1. No cloud deployment, managed broker, or production e-commerce operation is claimed.
+> **Status: Phase 6 is integrated; Phase 7 observability is implemented and locally verified on `main`; hosted checks are pending.** The Phase 7 backend Testcontainers suite passed 66 tests with 0 skipped. No cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
@@ -24,8 +24,9 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Customer shopping cart | Phase 4 implementation present; PostgreSQL/Redis integration tests pass locally |
 | Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
+| Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
-| Order and event runtime verification | PostgreSQL/Redis/RabbitMQ-backed checkout, concurrency, rollback, ownership, migration and event tests pass locally (64 tests, 0 skipped) |
+| Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 
@@ -70,6 +71,11 @@ tests/                    Cross-application tests (as introduced)
 - [Order and checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md)
 - [Event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md)
 - [Event catalog](docs/03-architecture/EVENT_CATALOG.md)
+- [Observability architecture](docs/03-architecture/OBSERVABILITY_ARCHITECTURE.md)
+- [SLO/SLI definitions](docs/07-observability/SLO_SLI_DEFINITIONS.md)
+- [Alerting runbook](docs/07-observability/ALERTING_RUNBOOK.md)
+- [Dashboard catalog](docs/07-observability/DASHBOARD_CATALOG.md)
+- [Load-test results](docs/07-observability/LOAD_TEST_RESULTS.md)
 - [API endpoint reference](docs/10-deployment/API_ENDPOINTS.md)
 - [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
 - [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)
@@ -87,7 +93,7 @@ Responsibilities are collaborative; see [team responsibilities](docs/11-team-wor
 
 ## Engineering and security
 
-Use feature branches and pull requests. Never commit credentials. `.env` is ignored; `.env.example` contains local-only defaults and is not suitable for deployment. No cloud resources, paid services, credentials, or deployment have been created. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [cost policy](docs/08-finops/COST_MANAGEMENT_STRATEGY.md).
+For this execution, work is integrated directly on `main` without pull requests, per repository-owner direction. Never commit credentials. `.env` is ignored; `.env.example` contains local-only defaults and is not suitable for deployment. No cloud resources, paid services, or production deployment have been created. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [cost policy](docs/08-finops/COST_MANAGEMENT_STRATEGY.md).
 
 ## License
 

@@ -82,7 +82,7 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/info", "/api/v1/auth/csrf").permitAll()
                      .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                      .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/*", "/api/v1/products/*/availability", "/api/v1/categories", "/api/v1/categories/*").permitAll()
-                    .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers("/actuator/health/**", "/actuator/prometheus", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                      .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                      .requestMatchers("/api/v1/checkout", "/api/v1/orders", "/api/v1/orders/**").hasRole("CUSTOMER")
                      .requestMatchers("/api/v1/notifications", "/api/v1/notifications/**").hasRole("CUSTOMER")

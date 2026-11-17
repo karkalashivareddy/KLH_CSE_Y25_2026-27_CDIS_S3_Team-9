@@ -14,6 +14,7 @@ services:
     build: ./apps/api
     environment:
       SERVER_PORT: 8080
+      MANAGEMENT_SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cloudresilience}?connectTimeout=5&socketTimeout=10
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cloudresilience}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
@@ -29,6 +30,11 @@ services:
       APP_OUTBOX_PUBLISHER_ENABLED: ${APP_OUTBOX_PUBLISHER_ENABLED:-true}
       APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
       APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
+      TRACING_EXPORT_OTLP_ENABLED: ${TRACING_EXPORT_OTLP_ENABLED:-false}
+      TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-0.1}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-cloudresilience-api}
+      OTEL_PROPAGATORS: tracecontext,baggage
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
@@ -39,12 +45,12 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/actuator/health/readiness"]
       interval: 15s
       timeout: 3s
       retries: 5
       start_period: 45s
-    networks: [application, data]
+    networks: [application, data, observability]
     restart: unless-stopped
 
   api2:
@@ -52,6 +58,7 @@ services:
     build: ./apps/api
     environment:
       SERVER_PORT: 8080
+      MANAGEMENT_SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cloudresilience}?connectTimeout=5&socketTimeout=10
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-cloudresilience}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
@@ -67,6 +74,11 @@ services:
       APP_OUTBOX_PUBLISHER_ENABLED: ${APP_OUTBOX_PUBLISHER_ENABLED:-true}
       APP_SESSION_TIMEOUT: ${APP_SESSION_TIMEOUT:-30m}
       APP_SESSION_REDIS_NAMESPACE: ${APP_SESSION_REDIS_NAMESPACE:-cloudresilience:sessions}
+      TRACING_EXPORT_OTLP_ENABLED: ${TRACING_EXPORT_OTLP_ENABLED:-false}
+      TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-0.1}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-cloudresilience-api}
+      OTEL_PROPAGATORS: tracecontext,baggage
     ports:
       - "127.0.0.1:${API2_PORT:-8081}:8080"
     depends_on:
@@ -77,7 +89,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/actuator/health/readiness"]
       interval: 15s
       timeout: 3s
       retries: 5
@@ -86,6 +98,7 @@ services:
       application:
         aliases: [api]
       data: {}
+      observability: {}
     restart: unless-stopped
 
   postgres:
@@ -141,12 +154,114 @@ services:
     networks: [data]
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v3.16.0
+    profiles: [observability]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --storage.tsdb.retention.size=2GB
+      - --web.enable-lifecycle
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks: [observability, observability_host]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.3.1
+    profiles: [observability]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-local-only-change-me}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:${GRAFANA_PORT:-3000}
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on: [prometheus, loki, tempo]
+    networks: [observability, observability_host]
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.7.10
+    profiles: [observability]
+    command: ["-config.file=/etc/loki/config.yml"]
+    volumes:
+      - ./observability/loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data-filtered:/loki
+    networks: [observability]
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:3.1.1
+    profiles: [observability]
+    command: ["-config.file=/etc/tempo/config.yml"]
+    volumes:
+      - ./observability/tempo/config.yml:/etc/tempo/config.yml:ro
+      - tempo-data:/var/tempo
+    networks: [observability]
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.165.0
+    profiles: [observability]
+    command: ["--config=/etc/otelcol-contrib/config.yml"]
+    volumes:
+      - ./observability/otel-collector/config.yml:/etc/otelcol-contrib/config.yml:ro
+    depends_on: [tempo]
+    networks: [observability]
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.22.0
+    profiles: [observability]
+    command: ["run", "/etc/alloy/config.alloy", "--storage.path=/var/lib/alloy/data"]
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on: [loki]
+    networks: [observability]
+    restart: unless-stopped
+
+  k6:
+    image: grafana/k6:2.4.0
+    profiles: [load-test]
+    environment:
+      K6_BASE_URL: ${K6_BASE_URL:-http://web}
+    command: ["run", "/scripts/catalog.js"]
+    volumes:
+      - ./performance/k6:/scripts:ro
+    networks: [application]
+
 networks:
   application:
   data:
     internal: true
+  observability:
+    internal: true
+  observability_host:
 
 volumes:
   postgres-data:
   redis-data:
   rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+  loki-data-filtered:
+  tempo-data:
+  alloy-data:

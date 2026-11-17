@@ -1,6 +1,7 @@
 package com.cloudresilience.modules.orders.application;
 
 import com.cloudresilience.modules.events.application.OutboxWriter;
+import com.cloudresilience.modules.health.CloudResilienceMetrics;
 import com.cloudresilience.modules.events.domain.EventType;
 import com.cloudresilience.modules.events.domain.OrderEventPayloads;
 import com.cloudresilience.modules.orders.domain.IllegalOrderTransitionException;
@@ -19,11 +20,14 @@ public class OrderWorkflowService {
     private final JdbcTemplate jdbc;
     private final CheckoutTransactionService reservations;
     private final OutboxWriter outbox;
+    private final CloudResilienceMetrics metrics;
 
-    public OrderWorkflowService(JdbcTemplate jdbc, CheckoutTransactionService reservations, OutboxWriter outbox) {
+    public OrderWorkflowService(JdbcTemplate jdbc, CheckoutTransactionService reservations, OutboxWriter outbox,
+            CloudResilienceMetrics metrics) {
         this.jdbc = jdbc;
         this.reservations = reservations;
         this.outbox = outbox;
+        this.metrics = metrics;
     }
 
     @Transactional
@@ -58,6 +62,7 @@ public class OrderWorkflowService {
         };
         outbox.append(eventType, order.id(), OrderEventPayloads.transition(order.id(), order.customerId(),
                 order.orderNumber(), target, order.paymentStatus(), order.itemCount(), reason), order.id(), null);
+        metrics.recordOrderTransition(target.name());
     }
 
     private void cancel(LockedOrder order, UUID actorId, String reason) {
@@ -79,6 +84,7 @@ public class OrderWorkflowService {
         history(order.id(), order.status(), OrderStatus.CANCELLED, actorId, reason.strip());
         outbox.append(EventType.ORDER_CANCELLED, order.id(), OrderEventPayloads.cancellation(order.id(),
                 order.customerId(), order.orderNumber(), order.totalAmount(), "USD"), order.id(), null);
+        metrics.recordOrderTransition(OrderStatus.CANCELLED.name());
     }
 
     private LockedOrder lockOrder(UUID customerId, UUID orderId) {

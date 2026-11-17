@@ -42,6 +42,7 @@ spring:
       mandatory: true
       retry:
         enabled: false
+      observation-enabled: true
     listener:
       simple:
         acknowledge-mode: manual
@@ -49,6 +50,7 @@ spring:
         default-requeue-rejected: false
         missing-queues-fatal: false
         auto-startup: ${APP_MESSAGING_ENABLED:true}
+        observation-enabled: true
   jackson:
     default-property-inclusion: non_null
   datasource:
@@ -74,7 +76,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       show-details: never
@@ -93,6 +95,29 @@ management:
   info:
     env:
       enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.1}
+    propagation:
+      type: w3c
+    export:
+      otlp:
+        enabled: ${TRACING_EXPORT_OTLP_ENABLED:false}
+  opentelemetry:
+    tracing:
+      limits:
+        max-attributes: 64
+        max-attribute-value-length: 256
+  otlp:
+    metrics:
+      export:
+        enabled: false
 info:
   app:
     name: CloudResilience API

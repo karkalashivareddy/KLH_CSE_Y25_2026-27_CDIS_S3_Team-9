@@ -14,17 +14,22 @@ import com.cloudresilience.modules.events.application.OutboxPublisher;
 import com.cloudresilience.modules.events.messaging.EventPublisher;
 import com.cloudresilience.modules.events.persistence.OutboxEvent;
 import com.cloudresilience.modules.events.persistence.OutboxRepository;
+import com.cloudresilience.modules.health.CloudResilienceMetrics;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.amqp.core.AmqpAdmin;
 
 class OutboxPublisherTest {
     private final OutboxRepository repository = mock(OutboxRepository.class);
     private final EventPublisher publisher = mock(EventPublisher.class);
+    private final CloudResilienceMetrics metrics = new CloudResilienceMetrics(
+            new SimpleMeterRegistry(), repository, mock(AmqpAdmin.class));
 
     private OutboxPublisher publisher(boolean enabled) {
-        return new OutboxPublisher(repository, publisher, enabled, 10, 30, 5, 2, 60);
+        return new OutboxPublisher(repository, publisher, metrics, enabled, 10, 30, 5, 2, 60);
     }
 
     @Test

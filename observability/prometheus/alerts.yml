@@ -1,0 +1,65 @@
+groups:
+  - name: cloudresilience-sre
+    rules:
+      - alert: ApiHigh5xxRatio
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 1) > 0.05
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: API 5xx ratio is above 5% for five minutes
+          description: Inspect API logs and traces, then check PostgreSQL, Redis, and RabbitMQ readiness.
+
+      - alert: ApiHighP95Latency
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket[5m]))) > 0.75
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: API p95 latency exceeded 750ms for ten minutes
+          description: Check endpoint mix, Hikari utilization, JVM pressure, and event publisher backlog.
+
+      - alert: ApiScrapeMissing
+        expr: up{job="cloudresilience-api"} == 0
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: Prometheus cannot scrape the API
+          description: Check the API readiness endpoint and Compose network membership.
+
+      - alert: OutboxBacklogOld
+        expr: cloudresilience_outbox_oldest_pending_seconds > 300
+        for: 5m
+        labels:
+          severity: ticket
+        annotations:
+          summary: Oldest pending event is older than five minutes
+          description: Check broker availability, publisher confirms, and the outbox publisher logs.
+
+      - alert: EventDeadLetterQueueGrowing
+        expr: cloudresilience_event_dlq_messages > 0
+        for: 2m
+        labels:
+          severity: ticket
+        annotations:
+          summary: A consumer dead-letter queue contains messages
+          description: Inspect the dead-letter payload and reason through the authenticated admin API before replay.
+
+      - alert: EventConsumerRetries
+        expr: sum(rate(cloudresilience_event_consumer_retries_total[5m])) > 0
+        for: 5m
+        labels:
+          severity: ticket
+        annotations:
+          summary: Consumer retry rate remains non-zero
+          description: Inspect consumer error categories and dependency health before replaying any event.
+
+      - alert: PrometheusStorageNearLocalLimit
+        expr: prometheus_tsdb_storage_blocks_bytes > 1800000000
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: Prometheus blocks are near the configured 2GB local cap
+          description: Review retention and local Docker volume usage; do not delete evidence before export.

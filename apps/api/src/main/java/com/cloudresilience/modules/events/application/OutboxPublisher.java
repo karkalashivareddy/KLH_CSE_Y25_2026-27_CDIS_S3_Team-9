@@ -4,6 +4,7 @@ import com.cloudresilience.modules.events.domain.EventType;
 import com.cloudresilience.modules.events.messaging.EventPublisher;
 import com.cloudresilience.modules.events.persistence.OutboxEvent;
 import com.cloudresilience.modules.events.persistence.OutboxRepository;
+import com.cloudresilience.modules.health.CloudResilienceMetrics;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.List;
@@ -27,6 +28,7 @@ public class OutboxPublisher {
 
     private final OutboxRepository repository;
     private final EventPublisher publisher;
+    private final CloudResilienceMetrics metrics;
     private final boolean enabled;
     private final int batchSize;
     private final int leaseSeconds;
@@ -36,7 +38,7 @@ public class OutboxPublisher {
     private final String owner;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public OutboxPublisher(OutboxRepository repository, EventPublisher publisher,
+    public OutboxPublisher(OutboxRepository repository, EventPublisher publisher, CloudResilienceMetrics metrics,
             @Value("${app.outbox.publisher.enabled:true}") boolean enabled,
             @Value("${app.outbox.publisher.batch-size:50}") int batchSize,
             @Value("${app.outbox.publisher.lease-seconds:30}") int leaseSeconds,
@@ -45,6 +47,7 @@ public class OutboxPublisher {
             @Value("${app.outbox.publisher.max-backoff-seconds:300}") int maxBackoffSeconds) {
         this.repository = repository;
         this.publisher = publisher;
+        this.metrics = metrics;
         this.enabled = enabled;
         this.batchSize = batchSize;
         this.leaseSeconds = leaseSeconds;
@@ -70,12 +73,13 @@ public class OutboxPublisher {
             for (OutboxEvent event : claimed) {
                 try {
                     publisher.publish(event, routingKey(event.eventType()));
-                    repository.markPublished(event.id(), owner);
+                    if (repository.markPublished(event.id(), owner)) metrics.recordPublished();
                     published++;
                 } catch (RuntimeException failure) {
                     int nextAttempt = event.attemptCount() + 1;
                     int backoff = backoffSeconds(nextAttempt);
                     repository.markFailed(event.id(), owner, category(failure), backoff, maxAttempts);
+                    metrics.recordPublishFailure(category(failure));
                     log.warn("Outbox publish failed eventId={} eventType={} attempt={} category={}",
                             event.id(), event.eventType(), nextAttempt, category(failure));
                 }
