@@ -58,7 +58,7 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
       - name: Start local API and dependencies
-        run: docker compose up -d --build api
+        run: docker compose up -d --build --wait --wait-timeout 180 api
       - name: Seed isolated E2E catalog fixture
         run: docker compose exec -T postgres psql --username=cloudresilience --dbname=cloudresilience --set=ON_ERROR_STOP=1 --no-psqlrc < apps/web/e2e/fixtures/seed-catalog.sql
       - name: Run shopper, checkout, and insufficient-stock journeys

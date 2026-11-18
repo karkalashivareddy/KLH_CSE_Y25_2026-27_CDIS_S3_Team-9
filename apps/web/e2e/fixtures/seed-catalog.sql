@@ -8,9 +8,21 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO products(id,sku,name,slug,short_description,price,category_id,status)
 VALUES ('60000000-0000-4000-8000-000000000003','E2E-FIXTURE-001','E2E Fixture Product','e2e-fixture-product','Synthetic product for local browser verification',9.99,'60000000-0000-4000-8000-000000000002','ACTIVE')
 ON CONFLICT (id) DO NOTHING;
-INSERT INTO inventory(id,product_id,quantity_on_hand,quantity_reserved,version)
-VALUES ('60000000-0000-4000-8000-000000000004','60000000-0000-4000-8000-000000000003',5,0,1)
-ON CONFLICT (product_id) DO NOTHING;
+WITH inserted_inventory AS (
+    INSERT INTO inventory(id,product_id,quantity_on_hand,quantity_reserved,version)
+    VALUES ('60000000-0000-4000-8000-000000000004','60000000-0000-4000-8000-000000000003',5,0,1)
+    ON CONFLICT (product_id) DO NOTHING
+    RETURNING product_id, quantity_on_hand, quantity_reserved
+)
+INSERT INTO inventory_movements(
+    id,product_id,movement_type,quantity_delta,reserved_delta,
+    previous_quantity,new_quantity,previous_reserved,new_reserved,reason,performed_by
+)
+SELECT gen_random_uuid(), product_id, 'INITIAL_STOCK', quantity_on_hand, 0,
+       0, quantity_on_hand, 0, quantity_reserved,
+       'Initial synthetic stock for E2E fixture',
+       '60000000-0000-4000-8000-000000000001'
+FROM inserted_inventory;
 WITH current_stock AS (
     SELECT product_id, quantity_on_hand, quantity_reserved
     FROM inventory
