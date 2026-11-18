@@ -1,10 +1,12 @@
 # CloudResilience engineering handoff
 
-**Status: NOT COMPLETE.** This report records delivered capabilities and the remaining release gates without treating design work as proof. Latest verified code SHA before the current follow-up is `82cb5c78b2e4c45f59551cd0e3e954b387c7e1e6` on the single `main` branch.
+**Status: NOT COMPLETE.** This report records delivered capabilities and the remaining release gates without treating design work as proof. Latest code SHA at this report update: `bd587a0ccea5f5354fb8beee2fce896319d688a1` on the single `main` branch; its hosted workflow is pending.
 
 ## Objectives and architecture
 
 CloudResilience is a modular Java/Spring Boot and React/TypeScript e-commerce application. PostgreSQL is the durable business source of truth; Redis backs shared HTTP sessions. Checkout and inventory reservation remain transactional. RabbitMQ carries versioned order events from a PostgreSQL transactional outbox, with at-least-once delivery and idempotent notification/activity consumers. Local observability uses OpenTelemetry, Prometheus, Grafana, Loki and Tempo. AWS is represented by validated Terraform; no cloud resources were provisioned. Azure and Google Cloud are documented portability comparisons only.
+
+The GitHub repository has a descriptive project summary and technology/cloud engineering topics, a single `main` branch, no open pull requests, a CI status badge, and linked phase/evidence documentation. Repository visibility was left unchanged.
 
 ## Phase status
 
@@ -14,8 +16,8 @@ CloudResilience is a modular Java/Spring Boot and React/TypeScript e-commerce ap
 | 6 | Implemented and integrated | Transactional outbox, RabbitMQ, retries/DLQ, inbox deduplication; report records 64 passing integration tests. |
 | 7 | Implemented locally | Observability stack, dashboards, alerts and a catalog-only load test; no cloud-scale capacity claim. |
 | 8 | Terraform implemented and validated | Hosted validation includes fmt, backend-free init, validate, TFLint and Checkov. No apply or cloud deployment. |
-| 9 | Partial | Empty and synthetic catalog/inventory local restores passed. Hosted run `44264241686` passed the order/payment isolated restore drill and API smoke; a recovery artifact is being added for the next run. Actual RTO/RPO, Redis loss, RabbitMQ outage/replay and cloud failover remain unmeasured/not run. |
-| 10 | Partial | Hosted run `44264241686` passed all 3 browser journeys. Passive ZAP and web-header validation remain unrun because web-container startup failed. Cost totals remain not estimated; no approved region/workload inputs. |
+| 9 | Partial | Hosted run `44265982978` passed restoration of 1 order, 1 item, 1 payment, 1 reservation and event/inbox state into a fresh isolated DB; 5 Flyway migrations and API smoke passed; reported integrity mismatches were zero. Archive SHA-256 and counts are in the DR report. Procedure duration was 11 seconds, not RTO; RPO remains unmeasured. Redis loss, RabbitMQ outage/replay and cloud failover are not run. |
+| 10 | Partial | Hosted run `44265982978` passed all 3 browser journeys, order/payment restore, and build/start of the deployable web image. The HTTP header assertion failed, so ZAP did not run. A follow-up records response headers as an artifact. Cost totals remain not estimated; no approved region/workload inputs. |
 
 ## Delivered engineering decisions
 
@@ -31,14 +33,15 @@ CloudResilience is a modular Java/Spring Boot and React/TypeScript e-commerce ap
 - Latest local frontend run: Vitest **21 passed across 6 files**; lint, typecheck and production build passed; Playwright discovered **3 tests**.
 - Hosted run `44249204505` on `dd7560dd3854bc6675bbe0f8919af7c4d2774a56`: all six jobs passed, including browser journeys **3 passed / 0 skipped**.
 - Hosted run `44253328788` on `fbe04ad6e2b61a1cb5bd6baa13d4e619a44a6c3f`: web, API, Terraform/IaC, Gitleaks and OSV jobs passed; Browser end-to-end failed during combined Compose startup.
-- Hosted runs `44255857779` (`18042b6`) and `44264241686` (`82cb5c7`): Browser E2E (3 journeys) and PostgreSQL order/payment recovery both passed; deployable web container startup failed, so header checks and ZAP were skipped. The final failed step logs were inaccessible from this session.
-- Workflow commit `82cb5c7` has all five non-browser jobs passed; the browser job is still failed at web-container startup. Latest follow-up changes replace `docker compose up web` with a directly run image on the same private Compose network and retain recovery manifests as CI artifacts.
+- Hosted runs `44255857779` (`18042b6`) and `44264241686` (`82cb5c7`): Browser E2E (3 journeys) and PostgreSQL order/payment recovery passed; web startup/header steps failed before DAST.
+- Hosted run `44265982978` (`05295f2`): E2E, order/payment restore, direct web-image build/start, and all non-browser jobs passed. The response-header assertion failed, so ZAP was skipped. Its recovery artifact was downloaded and inspected; exact evidence is in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`.
+- Follow-up workflow for `bd587a0` saved an empty header artifact: the host-published port did not yield an HTTP response. The next change removes host port publication and probes the web container over loopback before ZAP accesses it over the Compose network.
 - A high-severity development-toolchain advisory, GHSA-fc5q-39xc-vjpf (picomatch), remains open. Production dependency audit passing does not resolve this advisory.
 - ZAP baseline, if successful in the pending run, is passive scanning evidence only; it is not a penetration test. No external penetration test or formal audit was performed.
 
 ## Recovery and cloud evidence
 
-Local recovery artifacts are kept outside the repository. The populated local drill restored a synthetic product/inventory database and passed inventory reconciliation plus API readiness/catalog smoke checks. It contained no order/payment data. The new CI script creates and verifies a custom-format PostgreSQL archive from synthetic Playwright orders/payments, restores to a fresh isolated database, reconciles snapshots, and checks API readiness/catalog access; its hosted result is pending verification. Its recorded procedure duration is not an RTO measurement, and RPO is not measured.
+Local recovery artifacts are kept outside the repository. The hosted synthetic CI drill backed up and restored 1 order, 1 item, 1 payment, 1 reservation, 1 inventory product/row, 2 movements and 1 outbox event to a fresh isolated database. It verified 5 Flyway migration records, two consumer inbox records, matching snapshots, zero consistency mismatches and recovered API readiness/catalog access. The archive was 73,893 bytes with SHA-256 `ab7b5224aaa301f017cea6100dc8e486e219d0f69bee75760ef83068ecac2003`. The 11-second procedure interval is not RTO; RPO was not measured.
 
 No AWS/Azure/GCP resources, database, DNS changes, production deployment, cross-region replication, or cloud recovery drill exist. Terraform was not applied. No real payments or provider charges occurred.
 

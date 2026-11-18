@@ -54,6 +54,24 @@ No measured RTO, RPO, or data-loss window is available. A local empty-state arch
 
 This drill demonstrates populated catalog and inventory archive recovery only. It does not satisfy the full Phase 9 acceptance criteria.
 
+### Hosted order/payment restore with browser E2E data — 2026-11-18
+
+| Field | Evidence |
+|---|---|
+| Workflow | [GitHub Actions run 44265982978](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44265982978), commit `05295f203f08437d0bde68951934cc9097ded2e1` |
+| Exercise | `ci-order-recovery`; Compose PostgreSQL 17.7; E2E-created order and payment |
+| Archive | `pg_dump` custom format, 73,893 bytes; SHA-256 `ab7b5224aaa301f017cea6100dc8e486e219d0f69bee75760ef83068ecac2003` |
+| Recovery target | New isolated database `recovery_e2e_44265982978_1`; source database preserved |
+| Restored business rows | 1 order, 1 order item, 1 payment, 1 reservation, 1 product/inventory row, 2 inventory movements |
+| Event state | 1 outbox event, 2 processed-event inbox rows, 1 notification, 1 order activity, 0 unsettled outbox events, 0 DLQ rows |
+| Consistency checks | Source and restored snapshots identical; 5 successful Flyway records; zero missing/mismatched payments, item subtotal mismatches, inventory invariant/ledger mismatches, outbox aggregate mismatches, or unprocessed events |
+| Application smoke | PASS; API readiness and recovered catalog endpoint passed |
+| Procedure duration | 11 seconds for this synthetic archive/restore/API validation interval; not a measured RTO |
+| RPO/data loss | NOT MEASURED; no failure point or data-loss window was injected; manifest `actualRtoSeconds` and `actualRpo` are null |
+| Artifact | `postgres-recovery-44265982978` CI artifact contains the JSON manifest and custom-format archive; not committed to the repository |
+
+This drill verifies restoration of a populated synthetic order/payment database in CI. It does not test production recovery, broker outage/replay, Redis loss, cloud failover, or an approved RTO/RPO target.
+
 ## Evidence record for future drills
 
 For each authorized exercise, attach a sanitized evidence reference and record: exercise ID, environment, commit/image SHA, backup ID/checksum, recovery point UTC, failure time, detection time, recovery start, API readiness time, verification-complete time, actual RTO, actual RPO/data gap, integrity checks, skipped/failed checks, approver, cleanup confirmation, deviations and follow-up owner/date. Never include secrets, credentials, cookies or real customer data in the evidence package.
