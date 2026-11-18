@@ -34,6 +34,25 @@
 
 No measured RTO, RPO, or data-loss window is available. A local empty-state archive was verified and restored; this is not evidence of business-data recovery or cloud failover.
 
+### Local populated catalog/inventory restore — 2026-11-18
+
+| Field | Evidence |
+|---|---|
+| Exercise ID | `drill-20261118-05` |
+| Environment | Local Docker Compose; PostgreSQL 17.7 |
+| Source | Disposable synthetic database `drtest_20261118_01`; application database was not modified |
+| Backup artifact | `%TEMP%\cloudresilience-drill\drill-20261118-05.dump` (local-only, not committed) |
+| SHA-256 | `77714e9355845c5d20214addf86da58f69f4e22573502efc6906e0881e22803d` |
+| Archive | Custom format, 71,332 bytes; JSON metadata names source DB and PostgreSQL version |
+| Restore target | New isolated database `recovery_drill_20261118_05` |
+| Restore result | PASS; checksum verified and restore completed |
+| Recovered counts | 5 successful Flyway migrations; 1 product; 1 inventory row; 2 inventory movements; 1 reserved row |
+| Reconciliation | 0 inventory invariant violations; 0 inventory ledger mismatches; 0 missing order payments; outbox backlog 0; quarantined DLQ 0 |
+| Recovery timing | NOT MEASURED as RTO/RPO; this is a fixture restore without injected outage |
+| Limitations | Fixture contains no customer/order/payment business records; application checkout against restored fixture, Redis loss, RabbitMQ outage/replay, and cloud failover were not tested |
+
+This drill demonstrates populated catalog and inventory archive recovery only. It does not satisfy the full Phase 9 acceptance criteria.
+
 ## Evidence record for future drills
 
 For each authorized exercise, attach a sanitized evidence reference and record: exercise ID, environment, commit/image SHA, backup ID/checksum, recovery point UTC, failure time, detection time, recovery start, API readiness time, verification-complete time, actual RTO, actual RPO/data gap, integrity checks, skipped/failed checks, approver, cleanup confirmation, deviations and follow-up owner/date. Never include secrets, credentials, cookies or real customer data in the evidence package.

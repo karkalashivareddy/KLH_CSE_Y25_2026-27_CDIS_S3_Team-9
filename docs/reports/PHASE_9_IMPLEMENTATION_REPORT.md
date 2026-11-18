@@ -1,12 +1,12 @@
 # Phase 9: disaster recovery report
 
-**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented. One local empty-state backup/checksum/restore drill passed; business-data recovery, failure injection, dependency recovery and measured RTO/RPO remain outstanding, so Phase 9 acceptance criteria are not met.
+**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented. Empty-state and populated synthetic catalog/inventory backup/restore drills passed. Order/payment recovery, failure injection, dependency recovery and measured RTO/RPO remain outstanding, so Phase 9 acceptance criteria are not met.
 
 **Date:** 2026-11-18
 **Branch:** `main` (single-branch workflow; no PRs)
-**Base commit:** `1fe7b1308958b974758b069abbced544e48ac5c3` (Phase 8 integrated; hosted CI run [44108903172](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44108903172) passed for this exact SHA)
-**Implementation commit:** `fab9c135cf1d18bf75f38d22939166ea41e43c13`
-**CI run:** [44234484421](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44234484421) passed at the exact implementation SHA; API integration/package, Terraform/TFLint/Checkov, production npm audit, Gitleaks, OSV, and container scans passed.
+**Base commit:** `54d9a69f3200a9bd4cfa756e77afac9d70230a7d` (latest verified main before this work; hosted CI run [44235127270](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44235127270) passed for this exact SHA)
+**Implementation commit:** Pending direct integration on `main`.
+**CI run:** Pending for the resulting commit.
 
 ## Scope delivered
 
@@ -20,9 +20,9 @@
 | Check | Status | Evidence |
 |---|---|---|
 | PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files under Windows PowerShell 5.1 |
-| PostgreSQL backup + checksum | PASS (empty-state drill) | Backup `drill-20261118-02`; SHA-256 and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifact remains local in `%TEMP%` |
-| Isolated restore | PASS (empty-state drill) | Restored to `recovery_drill_20261118_02`; source was not overwritten |
-| Flyway/schema, consistency, API restore smoke | PARTIAL PASS | 5 migrations, 22 tables, zero inventory invariant violations, API readiness UP and empty catalog endpoint successful; no order/inventory data existed |
+| PostgreSQL backup + checksum | PASS (empty and synthetic populated drills) | IDs `drill-20261118-02` and `drill-20261118-05`; hashes and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifacts remain local in `%TEMP%` |
+| Isolated restore | PASS (empty and synthetic populated drills) | Restored to `recovery_drill_20261118_02` and `recovery_drill_20261118_05`; source application DB was not overwritten |
+| Flyway/schema, inventory ledger and API restore smoke | PARTIAL PASS | Empty-state API readiness and catalog smoke passed; populated drill recovered 5 Flyway records, 1 product, 1 inventory row, 2 movements, zero inventory invariant/ledger mismatches. Orders/payments were absent from fixture. |
 | Outbox/inbox recovery and event reconciliation | NOT RUN | No controlled recovery drill |
 | Redis loss/re-authentication | NOT RUN | Documented only |
 | RabbitMQ outage/restart/replay | NOT RUN | Existing messaging tests are not a Phase 9 backup/restore drill |
@@ -31,4 +31,4 @@
 
 ## Limitations
 
-The initial drill exposed and fixed database selection, user selection, and PowerShell 5.1 UTF-8 metadata issues. The successful run covers an empty database only; a populated order/inventory restore, API validation, outbox reconciliation, Redis/RabbitMQ failure drills, and measured RTO/RPO remain unverified. Compose volumes are not backups. Terraform RDS settings remain unprovisioned. Four-hour RTO and 15-minute RPO are unapproved targets. No cloud or destructive operation was executed.
+The drills exposed and fixed database selection, user selection, and PowerShell 5.1 UTF-8 metadata issues. A guarded `-SourceDatabase drtest_*` option supports disposable local fixtures only. The populated drill did not include order/payment data or run the API against the recovered fixture; outbox reconciliation, Redis/RabbitMQ failure drills, and measured RTO/RPO remain unverified. Compose volumes are not backups. Terraform RDS settings remain unprovisioned. Four-hour RTO and 15-minute RPO are unapproved targets. No cloud or destructive operation was executed.

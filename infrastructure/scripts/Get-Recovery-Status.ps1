@@ -18,10 +18,12 @@ SELECT json_build_object(
   'orders', (SELECT count(*) FROM customer_orders),
   'payments', (SELECT count(*) FROM payments),
   'inventoryRows', (SELECT count(*) FROM inventory),
+  'inventoryMovements', (SELECT count(*) FROM inventory_movements),
   'reservedRows', (SELECT count(*) FROM inventory WHERE quantity_reserved > 0),
   'pendingOutbox', (SELECT count(*) FROM outbox_events WHERE status IN ('PENDING','PROCESSING')),
   'deadLetters', (SELECT count(*) FROM dead_letter_messages WHERE status = 'QUARANTINED'),
   'inventoryInvariantViolations', (SELECT count(*) FROM inventory WHERE quantity_on_hand < 0 OR quantity_reserved < 0 OR quantity_reserved > quantity_on_hand),
+  'inventoryLedgerMismatches', (SELECT count(*) FROM inventory i LEFT JOIN LATERAL (SELECT m.new_quantity, m.new_reserved FROM inventory_movements m WHERE m.product_id = i.product_id ORDER BY m.created_at DESC, m.id DESC LIMIT 1) latest ON TRUE WHERE latest.new_quantity IS NULL OR latest.new_quantity <> i.quantity_on_hand OR latest.new_reserved <> i.quantity_reserved),
   'ordersWithoutPayment', (SELECT count(*) FROM customer_orders o LEFT JOIN payments p ON p.order_id = o.id WHERE p.id IS NULL)
 );
 '@

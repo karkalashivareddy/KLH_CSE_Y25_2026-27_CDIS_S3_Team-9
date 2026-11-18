@@ -32,12 +32,16 @@ dist/
 build/
 target/
 coverage/
+playwright-report/
+test-results/
 .vite/
 .turbo/
 *.class
 *.jar
 *.war
 *.tsbuildinfo
+playwright-report/
+test-results/
 .terraform/
 *.tfstate
 *.tfstate.*

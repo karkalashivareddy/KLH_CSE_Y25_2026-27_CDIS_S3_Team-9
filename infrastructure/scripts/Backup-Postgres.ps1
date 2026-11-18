@@ -7,6 +7,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $BackupDirectory,
 
+    [ValidatePattern('^drtest_[a-z0-9_]{1,40}$')]
+    [string] $SourceDatabase,
+
     [ValidateSet('local')]
     [string] $Environment = 'local'
 )
@@ -21,8 +24,9 @@ if ((Test-Path -LiteralPath $dumpPath) -or (Test-Path -LiteralPath $metadataPath
     throw 'Backup ID already exists; choose a new ID to preserve prior evidence.'
 }
 
-$database = (docker compose exec -T postgres printenv POSTGRES_DB).Trim()
-if ($LASTEXITCODE -ne 0 -or -not $database) { throw 'Could not read the configured Compose database name.' }
+$configuredDatabase = (docker compose exec -T postgres printenv POSTGRES_DB).Trim()
+if ($LASTEXITCODE -ne 0 -or -not $configuredDatabase) { throw 'Could not read the configured Compose database name.' }
+$database = if ($SourceDatabase) { $SourceDatabase } else { $configuredDatabase }
 $databaseUser = (docker compose exec -T postgres printenv POSTGRES_USER).Trim()
 if ($LASTEXITCODE -ne 0 -or -not $databaseUser) { throw 'Could not read the configured Compose database user.' }
 docker compose exec -T postgres pg_dump --format=custom --no-owner --no-acl --file="/tmp/$BackupId.dump" --username=$databaseUser --dbname=$database
