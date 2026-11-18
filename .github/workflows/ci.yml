@@ -81,17 +81,25 @@ jobs:
         run: docker run --detach --name cloudresilience-web-dast --network cloudresilience_application --network-alias web --publish 127.0.0.1:5173:8080 cloudresilience-web:dast
       - name: Verify web security headers
         run: |
-          headers=""
+          headers_file="${RUNNER_TEMP}/web-response-headers.txt"
           for attempt in $(seq 1 30); do
-            if headers="$(curl --fail --silent --show-error --head http://127.0.0.1:5173/ 2>/dev/null)"; then break; fi
+            if curl --fail --silent --show-error --dump-header "$headers_file" --output /dev/null http://127.0.0.1:5173/ 2>/dev/null; then break; fi
             sleep 2
           done
-          test -n "$headers"
-          grep --fixed-strings --ignore-case "Content-Security-Policy: default-src 'self'" <<<"$headers"
-          grep --fixed-strings --ignore-case 'Referrer-Policy: strict-origin-when-cross-origin' <<<"$headers"
-          grep --fixed-strings --ignore-case 'X-Content-Type-Options: nosniff' <<<"$headers"
-          grep --fixed-strings --ignore-case 'X-Frame-Options: DENY' <<<"$headers"
-          grep --fixed-strings --ignore-case 'Permissions-Policy: camera=(), microphone=(), geolocation=()' <<<"$headers"
+          test -s "$headers_file"
+          cat "$headers_file"
+          grep --fixed-strings --ignore-case "Content-Security-Policy: default-src 'self'" "$headers_file"
+          grep --fixed-strings --ignore-case 'Referrer-Policy: strict-origin-when-cross-origin' "$headers_file"
+          grep --fixed-strings --ignore-case 'X-Content-Type-Options: nosniff' "$headers_file"
+          grep --fixed-strings --ignore-case 'X-Frame-Options: DENY' "$headers_file"
+          grep --fixed-strings --ignore-case 'Permissions-Policy: camera=(), microphone=(), geolocation=()' "$headers_file"
+      - name: Retain web response headers
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: web-response-headers-${{ github.run_id }}
+          path: ${{ runner.temp }}/web-response-headers.txt
+          if-no-files-found: ignore
       - name: OWASP ZAP passive baseline
         run: |
           mkdir -p "${RUNNER_TEMP}/zap-results"
