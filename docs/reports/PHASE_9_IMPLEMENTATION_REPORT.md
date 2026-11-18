@@ -1,6 +1,6 @@
 # Phase 9: disaster recovery report
 
-**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented; PowerShell parser validation passed. Docker backup/restore execution and recovery drills are NOT RUN; Phase 9 acceptance criteria are not met.
+**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented. One local empty-state backup/checksum/restore drill passed; business-data recovery, failure injection, dependency recovery and measured RTO/RPO remain outstanding, so Phase 9 acceptance criteria are not met.
 
 **Date:** 2026-11-18
 **Branch:** `main` (single-branch workflow; no PRs)
@@ -20,9 +20,9 @@
 | Check | Status | Evidence |
 |---|---|---|
 | PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files |
-| PostgreSQL backup + checksum | NOT RUN | Script implemented; no Docker engine available and no Phase 9 backup artifact/command log |
-| Isolated restore | NOT RUN | Script implemented; no Docker engine available and no isolated restore database or evidence |
-| Flyway/schema and inventory/order consistency after restore | NOT RUN | No drill evidence |
+| PostgreSQL backup + checksum | PASS (empty-state drill) | Backup `drill-20261118-02`; SHA-256 and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifact remains local in `%TEMP%` |
+| Isolated restore | PASS (empty-state drill) | Restored to `recovery_drill_20261118_02`; source was not overwritten |
+| Flyway/schema and inventory/order consistency after restore | PARTIAL | 5 migrations, 22 tables, zero inventory invariant violations; no order/inventory data existed |
 | Outbox/inbox recovery and event reconciliation | NOT RUN | No controlled recovery drill |
 | Redis loss/re-authentication | NOT RUN | Documented only |
 | RabbitMQ outage/restart/replay | NOT RUN | Existing messaging tests are not a Phase 9 backup/restore drill |
@@ -31,4 +31,4 @@
 
 ## Limitations
 
-The scripts have syntax validation only; database semantics, Docker invocation, checksum round-trip, isolated restore, Flyway validation and data consistency checks remain unverified until executed with a Docker engine. The existing Compose named volumes provide persistence across container recreation, not backup guarantees. RDS automated backup settings in Terraform remain unprovisioned. Provisional four-hour RTO and 15-minute RPO are unapproved targets, not measured commitments. No cloud or destructive operation was executed.
+The initial drill exposed and fixed database selection, user selection, and PowerShell 5.1 UTF-8 metadata issues. The successful run covers an empty database only; a populated order/inventory restore, API validation, outbox reconciliation, Redis/RabbitMQ failure drills, and measured RTO/RPO remain unverified. Compose volumes are not backups. Terraform RDS settings remain unprovisioned. Four-hour RTO and 15-minute RPO are unapproved targets. No cloud or destructive operation was executed.

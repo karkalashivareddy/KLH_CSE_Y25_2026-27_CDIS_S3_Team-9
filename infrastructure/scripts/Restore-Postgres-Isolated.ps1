@@ -28,14 +28,15 @@ $containerPath = "/tmp/$TargetDatabase.dump"
 docker compose cp $resolvedBackup "postgres:$containerPath"
 if ($LASTEXITCODE -ne 0) { throw 'Could not copy the backup into the PostgreSQL container.' }
 try {
-    docker compose exec -T postgres pg_restore --list $containerPath | Out-Null
+    $databaseOwner = (docker compose exec -T postgres printenv POSTGRES_USER).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $databaseOwner) { throw 'Could not read the configured Compose database user.' }
+    docker compose exec -T postgres pg_restore --username=$databaseOwner --list $containerPath | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'pg_restore could not parse the backup archive.' }
-    $databaseOwner = if ([string]::IsNullOrWhiteSpace($env:POSTGRES_USER)) { 'cloudresilience' } else { $env:POSTGRES_USER }
-    docker compose exec -T postgres createdb --maintenance-db=postgres --owner=$databaseOwner $TargetDatabase
+    docker compose exec -T postgres createdb --username=$databaseOwner --maintenance-db=postgres --owner=$databaseOwner $TargetDatabase
     if ($LASTEXITCODE -ne 0) { throw 'Could not create the isolated restore database; it may already exist.' }
-    docker compose exec -T postgres pg_restore --exit-on-error --no-owner --no-acl --dbname=$TargetDatabase $containerPath
+    docker compose exec -T postgres pg_restore --username=$databaseOwner --exit-on-error --no-owner --no-acl --dbname=$TargetDatabase $containerPath
     if ($LASTEXITCODE -ne 0) { throw 'pg_restore failed; inspect the isolated database before retrying.' }
-    $validation = docker compose exec -T postgres psql --no-psqlrc --tuples-only --no-align --dbname=$TargetDatabase --command="SELECT current_database(), count(*) FROM information_schema.tables WHERE table_schema = 'public';"
+    $validation = docker compose exec -T postgres psql --username=$databaseOwner --no-psqlrc --tuples-only --no-align --dbname=$TargetDatabase --command="SELECT current_database(), count(*) FROM information_schema.tables WHERE table_schema = 'public';"
     if ($LASTEXITCODE -ne 0) { throw 'Post-restore schema validation query failed.' }
     [pscustomobject]@{
         targetDatabase = $TargetDatabase

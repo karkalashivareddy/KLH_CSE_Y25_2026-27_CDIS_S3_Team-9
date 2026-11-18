@@ -26,7 +26,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
-| Disaster recovery | Local backup/isolated-restore scripts added; execution and recovery drill remain unverified without Docker |
+| Disaster recovery | Local empty-state PostgreSQL backup/checksum/isolated-restore drill passed; business-data recovery and RTO/RPO remain unverified |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |

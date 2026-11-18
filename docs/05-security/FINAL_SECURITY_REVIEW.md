@@ -6,7 +6,7 @@
 
 - The application uses Spring Security, password hashing, authorization rules, CSRF-protected browser sessions and Redis-backed distributed HTTP sessions; consult [authentication and sessions](AUTHENTICATION_AND_SESSIONS.md) and the Phase 2–5 reports for tested scope.
 - PostgreSQL is the durable source for customer/business state. Checkout/inventory writes are transactionally handled; outbox publication is at-least-once and consumers use deduplication (Phase 6 report).
-- CI on `main` runs Gitleaks, OSV Maven scan, npm audit, backend/frontend checks, container builds and HIGH/CRITICAL Trivy scans. Terraform CI runs fmt, init without backend, validate, TFLint and Checkov.
+- CI on `main` runs Gitleaks, OSV Maven scan, a production dependency audit, backend/frontend checks, container builds and HIGH/CRITICAL Trivy scans. Terraform CI runs fmt, backend-free init, validate, TFLint and Checkov.
 - AWS Terraform defaults to private data subnets, restrictive security groups, encrypted storage, Secrets Manager references, KMS, task/execution role separation, immutable ECR tags, TLS ALB, WAF, bounded log retention, and deletion/backup controls. Terraform is validated; AWS resource behavior is not provisioned or audited.
 - Application container images use non-root runtime users. Nginx runs unprivileged in the web container.
 
@@ -17,7 +17,8 @@
 | Authentication, sessions, CSRF, authorization | Implemented and covered by existing API/frontend suites; see phase reports | Complete negative IDOR/role matrix and run on final main SHA. |
 | Secrets and repository history | Gitleaks CI passed Phase 8 current run | Continue scanning every push; no credentialed cloud secret rotation was tested. |
 | Maven dependencies | OSV CI passed Phase 8 current run | Re-run after any dependency change. |
-| npm packages | `npm audit` is in CI; exact Phase 10 SHA not yet checked | Capture audit summary for final SHA. |
+| npm production packages | CI uses `npm audit --omit=dev --audit-level=moderate`; Vite has been moved to devDependencies because the production image serves static assets from Nginx | Latest hosted audit must pass on the current main SHA. |
+| npm development toolchain | HIGH GHSA-fc5q-39xc-vjpf affects picomatch through 4.0.7; GitHub Advisory lists no patched version. Vite dev server binds to loopback. | Open security finding; monitor upstream release and restore full audit gate after a patched version is available. Phase 10 security acceptance is not met. |
 | Container OS and libraries | Trivy scans both built images at HIGH/CRITICAL; Phase 8 final run passed | Re-scan images for final commit and record findings/counts. |
 | Terraform | TFLint and Checkov required; Phase 8 final CI pass reported by run 44108903172 at commit 1fe7b13 | Re-run after subsequent Terraform changes. No provider-authenticated plan. |
 | DAST / OWASP ZAP | NOT RUN in the verified workflow | Add a local disposable Compose target and execute baseline scan before claiming DAST. |

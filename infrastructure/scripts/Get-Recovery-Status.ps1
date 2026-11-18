@@ -25,7 +25,9 @@ SELECT json_build_object(
   'ordersWithoutPayment', (SELECT count(*) FROM customer_orders o LEFT JOIN payments p ON p.order_id = o.id WHERE p.id IS NULL)
 );
 '@
-$result = docker compose exec -T postgres psql --no-psqlrc --tuples-only --no-align --dbname=$TargetDatabase --command=$query
+$databaseOwner = (docker compose exec -T postgres printenv POSTGRES_USER).Trim()
+if ($LASTEXITCODE -ne 0 -or -not $databaseOwner) { throw 'Could not read the configured Compose database user.' }
+$result = docker compose exec -T postgres psql --username=$databaseOwner --no-psqlrc --tuples-only --no-align --dbname=$TargetDatabase --command=$query
 if ($LASTEXITCODE -ne 0) { throw 'Recovery status query failed; confirm migrations and target database.' }
 $jsonLine = ($result | Where-Object { $_.Trim().StartsWith('{') } | Select-Object -Last 1).Trim()
 if (-not $jsonLine) { throw 'PostgreSQL returned no recovery status document.' }
