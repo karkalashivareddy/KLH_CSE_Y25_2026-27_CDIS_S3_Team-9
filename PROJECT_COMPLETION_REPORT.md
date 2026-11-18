@@ -1,6 +1,6 @@
 # CloudResilience engineering handoff
 
-**Status: NOT COMPLETE.** This report records delivered capabilities and the remaining release gates without treating design work or an unobserved CI run as proof. Last implementation SHA: `18042b632427e85d22a00aa2f21caef1067fd296` on the single `main` branch. Hosted workflow `44255857779` was still running at the last successful status query; the session could not retrieve its later result.
+**Status: NOT COMPLETE.** This report records delivered capabilities and the remaining release gates without treating design work as proof. Latest verified code SHA before the current follow-up is `82cb5c78b2e4c45f59551cd0e3e954b387c7e1e6` on the single `main` branch.
 
 ## Objectives and architecture
 
@@ -14,8 +14,8 @@ CloudResilience is a modular Java/Spring Boot and React/TypeScript e-commerce ap
 | 6 | Implemented and integrated | Transactional outbox, RabbitMQ, retries/DLQ, inbox deduplication; report records 64 passing integration tests. |
 | 7 | Implemented locally | Observability stack, dashboards, alerts and a catalog-only load test; no cloud-scale capacity claim. |
 | 8 | Terraform implemented and validated | Hosted validation includes fmt, backend-free init, validate, TFLint and Checkov. No apply or cloud deployment. |
-| 9 | Partial | Empty and synthetic catalog/inventory local restores passed. The order/payment CI recovery drill was added to workflow `44255857779`, but its outcome is **NOT VERIFIED** here. Actual RTO/RPO, Redis loss, RabbitMQ outage/replay and cloud failover remain unmeasured/not run. |
-| 10 | Partial | Three browser journeys previously passed hosted CI (3/3); the new main commit adds passive ZAP, web security-header checks, and an order/payment restore drill, but final hosted outcomes are **NOT VERIFIED**. Cost totals remain not estimated; no approved region/workload inputs. |
+| 9 | Partial | Empty and synthetic catalog/inventory local restores passed. Hosted run `44264241686` passed the order/payment isolated restore drill and API smoke; a recovery artifact is being added for the next run. Actual RTO/RPO, Redis loss, RabbitMQ outage/replay and cloud failover remain unmeasured/not run. |
+| 10 | Partial | Hosted run `44264241686` passed all 3 browser journeys. Passive ZAP and web-header validation remain unrun because web-container startup failed. Cost totals remain not estimated; no approved region/workload inputs. |
 
 ## Delivered engineering decisions
 
@@ -30,8 +30,9 @@ CloudResilience is a modular Java/Spring Boot and React/TypeScript e-commerce ap
 
 - Latest local frontend run: Vitest **21 passed across 6 files**; lint, typecheck and production build passed; Playwright discovered **3 tests**.
 - Hosted run `44249204505` on `dd7560dd3854bc6675bbe0f8919af7c4d2774a56`: all six jobs passed, including browser journeys **3 passed / 0 skipped**.
-- Hosted run `44253328788` on `fbe04ad6e2b61a1cb5bd6baa13d4e619a44a6c3f`: web, API, Terraform/IaC, Gitleaks and OSV jobs passed; Browser end-to-end failed during combined Compose startup before E2E, restore or DAST steps ran. The follow-up split startup and added failure diagnostics in `18042b6`.
-- Hosted run `44255857779` on `18042b632427e85d22a00aa2f21caef1067fd296`: status/result **NOT VERIFIED** in this session; do not count as passing until all jobs are inspected.
+- Hosted run `44253328788` on `fbe04ad6e2b61a1cb5bd6baa13d4e619a44a6c3f`: web, API, Terraform/IaC, Gitleaks and OSV jobs passed; Browser end-to-end failed during combined Compose startup.
+- Hosted runs `44255857779` (`18042b6`) and `44264241686` (`82cb5c7`): Browser E2E (3 journeys) and PostgreSQL order/payment recovery both passed; deployable web container startup failed, so header checks and ZAP were skipped. The final failed step logs were inaccessible from this session.
+- Workflow commit `82cb5c7` has all five non-browser jobs passed; the browser job is still failed at web-container startup. Latest follow-up changes replace `docker compose up web` with a directly run image on the same private Compose network and retain recovery manifests as CI artifacts.
 - A high-severity development-toolchain advisory, GHSA-fc5q-39xc-vjpf (picomatch), remains open. Production dependency audit passing does not resolve this advisory.
 - ZAP baseline, if successful in the pending run, is passive scanning evidence only; it is not a penetration test. No external penetration test or formal audit was performed.
 
@@ -43,8 +44,8 @@ No AWS/Azure/GCP resources, database, DNS changes, production deployment, cross-
 
 ## Current handoff and next gates
 
-1. Inspect every job in hosted run `44255857779` at exact SHA `18042b6`; if any fail, fix and push directly to `main`, then verify the rerun.
-2. Record the actual order/payment restore manifest and ZAP findings; keep them as CI artifacts and document counts/checksum without presenting the CI exercise as cloud RTO/RPO.
+1. Verify the current main CI run after the Docker-runner follow-up; ensure all E2E, recovery, image, header and ZAP steps execute.
+2. Record the order/payment restore manifest and ZAP findings from CI artifacts; document counts/checksum without presenting the CI exercise as cloud RTO/RPO.
 3. Resolve or formally track the high-severity picomatch advisory; do not suppress it.
 4. Obtain region, currency, workload, SKU, HA, backup-retention and recovery-target assumptions before publishing cost totals.
 5. If later authorized, run cloud deployment and recovery only under a separate explicit deployment approval; nothing in this work provisioned resources.

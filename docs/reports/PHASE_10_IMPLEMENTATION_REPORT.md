@@ -7,7 +7,7 @@
 **Base SHA:** `54d9a69f3200a9bd4cfa756e77afac9d70230a7d` (latest verified main commit before this work; hosted CI [44235127270](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44235127270) passed at this SHA)
 **Implementation SHA:** `dd7560dd3854bc6675bbe0f8919af7c4d2774a56` (direct push to `main`; phase acceptance remains in progress)
 **Latest completed CI run:** [44249204505](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44249204505) passed at the exact implementation SHA; all six jobs including browser E2E passed.
-**Latest code follow-up:** commit `18042b632427e85d22a00aa2f21caef1067fd296` splits API/E2E startup from the deployable web container and adds web security-header verification, the PostgreSQL order/payment restore drill and passive ZAP. Workflow run [44255857779](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44255857779) was in progress at last successful status query and its final result was not available at report time.
+**Latest code follow-up before current change:** commit `18042b632427e85d22a00aa2f21caef1067fd296` split API/E2E startup from the deployable web container and added header verification, order/payment recovery and passive ZAP. Run `44264241686` on documentation-updated `82cb5c7` passed all 3 browser journeys and the order/payment restore step, but web-container startup failed before headers/DAST. The current follow-up runs the built image directly on the isolated Compose network and retains recovery evidence.
 
 ## Documentation delivered in this work
 
@@ -17,7 +17,7 @@
 - Source/CI-based security review and remaining threat validation: `docs/05-security/FINAL_SECURITY_REVIEW.md`.
 - Evidence snapshot with PASS and NOT VERIFIED statuses: `docs/09-testing/FINAL_VALIDATION_MATRIX.md`.
 - Playwright shopper, simulated-checkout, and insufficient-stock journeys: hosted E2E passed 3/3 in run `44249204505` against a Compose API and synthetic stock fixture. Local happy paths passed 2/2 using cached Chromium 1248 via an explicit executable-path override because the pinned browser download did not complete. Initial hosted run `44248462845` failed because seeding raced Flyway table creation; adding `docker compose up --wait` fixed the ordering. The local PowerShell fixture wrapper passed parsing; hosted CI executed the shared SQL fixture successfully. Current local full rerun cannot reach the API while Docker Desktop returns an API 500.
-- CI run `44253328788` passed the web, API, Terraform/IaC, Gitleaks and OSV jobs but failed in Compose startup before browser journeys, restore or DAST ran. The follow-up workflow on `18042b6` separates the known API/E2E setup from the web-container setup and emits Compose status/logs after failures.
+- CI run `44253328788` passed web, API, Terraform/IaC, Gitleaks and OSV but failed during Compose startup before browser journeys, restore or DAST. Run `44264241686` passed 3/3 browser journeys and the order/payment backup/restore/API smoke, but again failed starting the deployable web container. Header and ZAP checks did not run. The current follow-up uses `docker run` attached to the isolated application network and uploads recovery JSON evidence.
 
 ## Evidence and limitations
 
@@ -27,8 +27,8 @@
 - Vite is now classified as a development dependency and the development server binds only to loopback. Local and hosted production dependency audits passed. The dev-toolchain advisory remains open until upstream publishes a patched release; this mitigation does not make the high-severity finding disappear, and Phase 10 remains incomplete.
 - Phase 7 includes a local catalog-only k6 result. It does not establish cloud performance or capacity for checkout/consumers.
 - No approved region and measured workload were available for a reproducible monthly cost estimate. No actual billed costs or savings were measured.
-- This security review is not penetration testing or a formal compliance audit. A passive ZAP baseline and response-header checks are now in the hosted workflow; their latest outcomes are NOT VERIFIED. Hosted E2E previously covered shopper success, simulated checkout success, and insufficient-stock rejection; payment-decline, duplicate-checkout and admin lifecycle journeys are not covered.
-- Phase 9 populated local restore covers synthetic catalog/inventory only. A hosted workflow now attempts an isolated restore with Playwright-created orders/payments; its outcome remains NOT VERIFIED. Dependency failure drills and actual RTO/RPO measurements remain outstanding.
+- This security review is not penetration testing or a formal compliance audit. Passive ZAP and response-header checks remain NOT RUN because the deployable web container did not start in run `44264241686`. Hosted E2E passed shopper success, simulated checkout success, and insufficient-stock rejection; payment-decline, duplicate-checkout and admin lifecycle journeys are not covered.
+- Phase 9 local restore covers synthetic catalog/inventory, and hosted run `44264241686` passed isolated restore of Playwright-created orders/payments. Dependency failure drills and actual RTO/RPO measurements remain outstanding.
 - No cloud resources were provisioned. No real cloud recovery exercise occurred.
 
 ## Phase 10 acceptance status
@@ -37,10 +37,10 @@
 |---|---|
 | Multi-cloud mapping and semantic differences | DOCUMENTED; provider adapters and tests NOT IMPLEMENTED |
 | Sourced reproducible provider cost comparison | Method, source links and worksheet documented; monthly totals NOT ESTIMATED because region/workload inputs and calculator exports are absent |
-| Security review | CI scans and production dependency audit PASS on run `44249204505` at `dd7560d`; unpatched high severity dev-toolchain advisory remains OPEN; passive ZAP/header checks in run `44255857779` NOT VERIFIED |
+| Security review | CI scans and production dependency audit PASS on run `44264241686`; unpatched high severity dev-toolchain advisory remains OPEN; passive ZAP/header checks NOT RUN |
 | E2E journeys | Shopper, simulated checkout, and insufficient-stock journeys PASS in hosted CI (3/3, 0 skipped) |
-| Recovery drill evidence | Populated synthetic catalog/inventory restore PASS; order/payment restore in run `44255857779` NOT VERIFIED; dependency failure drills and RTO/RPO remain pending |
+| Recovery drill evidence | Populated synthetic catalog/inventory restore PASS; hosted order/payment restore PASS in `44264241686`; dependency failure drills and RTO/RPO remain pending |
 | Final documentation matches implementation | PARTIAL; payment-decline, duplicate-checkout and admin lifecycle journeys, dependency failure drills, measured recovery targets and security finding resolution remain |
-| CI on current implementation SHA | NOT VERIFIED, run `44255857779` at `18042b6`; previous code commit `dd7560d` passed run `44249204505` |
+| CI on current implementation SHA | NOT VERIFIED; run `44264241686` failed only in Browser end-to-end web-container startup; 5 of 6 jobs passed |
 
 Do not mark this phase complete until E2E failure journeys and hosted browser verification, Phase 9 order-data and dependency recovery evidence, measured RTO/RPO, cost inputs and estimate provenance, DAST/security closure, final project handoff, and final main/CI state are verified. The unpatched high severity development-toolchain advisory remains an open finding; the production dependency audit passes but this mitigation does not resolve that advisory.

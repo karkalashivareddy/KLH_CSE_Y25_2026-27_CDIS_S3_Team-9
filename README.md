@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6–8 are implemented; Phases 9–10 remain incomplete.** Hosted CI run `44249204505` passed all six jobs at `dd7560dd3854bc6675bbe0f8919af7c4d2774a56`, including 3 browser journeys. Follow-up run `44255857779` for `18042b632427e85d22a00aa2f21caef1067fd296` includes an order/payment restore drill, passive ZAP scan and web-header checks; its outcome was not available when this status was updated. Local empty-state and synthetic catalog/inventory restores passed. Actual RTO/RPO, dependency failure drills, the high-severity development dependency advisory and final security validation remain open. No cloud deployment or production operation is claimed. See [project handoff](PROJECT_COMPLETION_REPORT.md).
+> **Status: Phases 6–8 are implemented; Phases 9–10 remain incomplete.** Hosted run `44264241686` passed all 3 browser journeys and the PostgreSQL order/payment isolated-restore drill. Its web-container startup failed, so security-header and ZAP steps did not run; a follow-up uses a directly run container and retains the recovery report. Local empty-state and synthetic catalog/inventory restores passed. Actual RTO/RPO, dependency failure drills, the high-severity development dependency advisory and final security validation remain open. No cloud deployment or production operation is claimed. See [project handoff](PROJECT_COMPLETION_REPORT.md).
 
 ## Product and target architecture
 
@@ -26,7 +26,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
-| Disaster recovery | Empty-state and synthetic catalog/inventory backup/checksum/isolated-restore drills passed; hosted order/payment recovery drill is pending verification; RTO/RPO remain unmeasured |
+| Disaster recovery | Empty-state and synthetic catalog/inventory restores passed locally; hosted order/payment isolated restore and API smoke passed in run 44264241686; RTO/RPO remain unmeasured |
 | E2E test setup | Hosted Playwright registration/catalog/cart/checkout and insufficient-stock journeys passed 3/3 using the synthetic fixture. |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |

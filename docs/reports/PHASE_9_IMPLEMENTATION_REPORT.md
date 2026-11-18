@@ -1,6 +1,6 @@
 # Phase 9: disaster recovery report
 
-**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented. Empty-state and populated synthetic catalog/inventory backup/restore drills passed. A new hosted workflow step now backs up E2E-created orders/payments, restores to an isolated database, reconciles data and starts an API against the restore. Its result is **NOT VERIFIED** in this report. Failure injection, dependency recovery and measured RTO/RPO remain outstanding, so Phase 9 acceptance criteria are not met.
+**Status:** DR procedures and local PostgreSQL backup/isolated-restore scripts are implemented. Empty-state and populated synthetic catalog/inventory backup/restore drills passed. Hosted run `44264241686` passed the E2E order/payment isolated restore, reconciliation and API smoke step. The latest workflow follow-up additionally uploads the JSON recovery manifest as a CI artifact. Failure injection, dependency recovery and measured RTO/RPO remain outstanding, so Phase 9 acceptance criteria are not met.
 
 **Date:** 2026-11-18
 **Branch:** `main` (single-branch workflow; no PRs)
@@ -23,7 +23,7 @@
 | PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files under Windows PowerShell 5.1 |
 | PostgreSQL backup + checksum | PASS (empty and synthetic populated drills) | IDs `drill-20261118-02` and `drill-20261118-05`; hashes and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifacts remain local in `%TEMP%` |
 | Isolated restore | PASS (empty and synthetic populated drills) | Restored to `recovery_drill_20261118_02` and `recovery_drill_20261118_05`; source application DB was not overwritten |
-| Order/payment restore drill | NOT VERIFIED | Added to hosted workflow run `44255857779`; that run failed during combined Compose startup before reaching the drill. Follow-up commit `18042b6` split API/E2E from deployable web startup and added diagnostics; inspect its rerun before claiming pass. |
+| Order/payment restore drill | PASS (hosted CI) | Run `44264241686`: the E2E journey created orders and payments; isolated archive restore, source/restore reconciliation, readiness and catalog API smoke all completed successfully. The JSON manifest was printed in the job log; a follow-up workflow retains it as an artifact for inspection. This is a synthetic CI fixture, not a measured RTO/RPO exercise. |
 | Flyway/schema, inventory ledger and API restore smoke | PARTIAL PASS | Empty-state API readiness/catalog smoke passed; populated drill recovered 5 Flyway records, 1 product, 1 inventory row, 2 movements, zero inventory invariant/ledger mismatches. A temporary API on the restored DB returned readiness UP and the recovered product. Orders/payments were absent from fixture. |
 | Outbox/inbox recovery and event reconciliation | NOT RUN | No controlled recovery drill |
 | Redis loss/re-authentication | NOT RUN | Documented only |

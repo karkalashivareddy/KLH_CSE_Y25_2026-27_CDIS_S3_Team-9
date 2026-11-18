@@ -68,11 +68,25 @@ jobs:
         run: npm run test:e2e
       - name: PostgreSQL order and payment restore drill
         run: bash infrastructure/scripts/Test-PostgresE2ERecovery.sh ci-order-recovery recovery_e2e_${{ github.run_id }}_1 ${{ runner.temp }}/cloudresilience-recovery
-      - name: Start deployable web container
-        run: docker compose up -d --build --wait --wait-timeout 180 web
+      - name: Retain PostgreSQL recovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: postgres-recovery-${{ github.run_id }}
+          path: ${{ runner.temp }}/cloudresilience-recovery/
+          if-no-files-found: ignore
+      - name: Build deployable web container for DAST
+        run: docker build --tag cloudresilience-web:dast ./apps/web
+      - name: Start deployable web container for DAST
+        run: docker run --detach --name cloudresilience-web-dast --network cloudresilience_application --network-alias web --publish 127.0.0.1:5173:8080 cloudresilience-web:dast
       - name: Verify web security headers
         run: |
-          headers="$(curl --fail --silent --show-error --head http://127.0.0.1:5173/)"
+          headers=""
+          for attempt in $(seq 1 30); do
+            if headers="$(curl --fail --silent --show-error --head http://127.0.0.1:5173/ 2>/dev/null)"; then break; fi
+            sleep 2
+          done
+          test -n "$headers"
           grep --fixed-strings --ignore-case "Content-Security-Policy: default-src 'self'" <<<"$headers"
           grep --fixed-strings --ignore-case 'Referrer-Policy: strict-origin-when-cross-origin' <<<"$headers"
           grep --fixed-strings --ignore-case 'X-Content-Type-Options: nosniff' <<<"$headers"
@@ -94,10 +108,15 @@ jobs:
           if-no-files-found: ignore
       - name: Show Compose logs on failure
         if: failure()
-        run: docker compose ps --all && docker compose logs --no-color api web postgres redis rabbitmq
+        run: |
+          docker compose ps --all
+          docker logs cloudresilience-web-dast 2>&1 || true
+          docker compose logs --no-color api web postgres redis rabbitmq
       - name: Stop local Compose services
         if: always()
-        run: docker compose down --volumes --remove-orphans
+        run: |
+          docker rm -f cloudresilience-web-dast 2>/dev/null || true
+          docker compose down --volumes --remove-orphans
 
   api:
     name: API tests and package
