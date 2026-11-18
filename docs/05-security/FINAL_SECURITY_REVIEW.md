@@ -15,15 +15,15 @@
 | Area | Evidence/status | Remaining validation |
 |---|---|---|
 | Authentication, sessions, CSRF, authorization | Implemented and covered by existing API/frontend suites; see phase reports | Complete negative IDOR/role matrix and run on final main SHA. |
-| Secrets and repository history | Gitleaks CI passed Phase 8 current run | Continue scanning every push; no credentialed cloud secret rotation was tested. |
-| Maven dependencies | OSV CI passed Phase 8 current run | Re-run after any dependency change. |
-| npm production packages | CI uses `npm audit --omit=dev --audit-level=moderate`; Vite has been moved to devDependencies because the production image serves static assets from Nginx | Latest hosted audit must pass on the current main SHA. |
-| npm development toolchain | HIGH GHSA-fc5q-39xc-vjpf affects picomatch through 4.0.7; GitHub Advisory lists no patched version. Vite dev server binds to loopback. | Open security finding; monitor upstream release and restore full audit gate after a patched version is available. Phase 10 security acceptance is not met. |
-| Container OS and libraries | Trivy scans both built images at HIGH/CRITICAL; Phase 8 final run passed | Re-scan images for final commit and record findings/counts. |
+| Secrets and repository history | Gitleaks CI passed run 44234484421 on `fab9c13` | Continue scanning every push; no credentialed cloud secret rotation was tested. |
+| Maven dependencies | OSV CI passed run 44234484421 on `fab9c13` | Re-run after any dependency change. |
+| npm production packages | `npm audit --omit=dev --audit-level=moderate` passed locally and in CI run 44234484421 on `fab9c13`; Vite is dev-only because production serves static files from Nginx | Re-run on every change. |
+| npm development toolchain | HIGH [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) affects picomatch through 4.0.7; GitHub Advisory lists no patched version. Vite dev server binds to loopback. | Open security finding; monitor upstream release and restore full audit gate after a patched version is available. Phase 10 security acceptance is not met. |
+| Container OS and libraries | Trivy scans both built images at HIGH/CRITICAL; CI run 44234484421 passed on `fab9c13` | Re-scan after image changes and record findings/counts. |
 | Terraform | TFLint and Checkov required; Phase 8 final CI pass reported by run 44108903172 at commit 1fe7b13 | Re-run after subsequent Terraform changes. No provider-authenticated plan. |
 | DAST / OWASP ZAP | NOT RUN in the verified workflow | Add a local disposable Compose target and execute baseline scan before claiming DAST. |
 | Cloud IAM/network | Terraform source reviewed; no AWS account/role exists in evidence | No IAM Access Analyzer, live SG review, secret rotation, TLS endpoint or AWS Config findings. |
-| Backups and recovery access | Phase 9 work pending | Verify encryption, operator separation, restore authorization and audit logs in an isolated restore drill. |
+| Backups and recovery access | Local empty-state backup/checksum/isolated restore plus API readiness smoke passed; business data absent | Verify populated order/inventory restoration, operator separation and broker/session recovery. |
 | Telemetry privacy | Structured telemetry documented/implemented in Phase 7 | Inspect actual traces/logs after final changes; ensure credentials, cookies, session IDs and customer data are absent. |
 
 ## Required release gate

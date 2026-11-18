@@ -18,9 +18,10 @@
 | Flyway history | 5 successful migrations in both source and restored DB |
 | Source/restored counts | products 0/0; orders 0/0; payments 0/0; inventory rows 0/0 |
 | Recovery status checks | inventory invariant violations 0; missing payments 0; outbox backlog 0; quarantined DLQ 0 |
+| Application smoke test | PASS; temporary API container against restored DB returned readiness `UP` and public `/api/v1/products` returned HTTP 200 with an empty page |
 | Procedure interval | 17.8 seconds from backup metadata timestamp to restore validation timestamp; this is not measured RTO |
 | Data gap / RPO | Not measured; source had no business records and no failure point was injected |
-| Limitations | Empty customer dataset; API against restore, inventory/order replay, Redis/RabbitMQ drills and cloud failover not tested |
+| Limitations | Empty customer dataset; no customer/order data flow, inventory/order replay, Redis/RabbitMQ drills or cloud failover tested |
 
 | Drill | Status | Result |
 |---|---|---|

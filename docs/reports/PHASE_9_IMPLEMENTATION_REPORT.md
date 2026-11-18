@@ -5,8 +5,8 @@
 **Date:** 2026-11-18
 **Branch:** `main` (single-branch workflow; no PRs)
 **Base commit:** `1fe7b1308958b974758b069abbced544e48ac5c3` (Phase 8 integrated; hosted CI run [44108903172](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44108903172) passed for this exact SHA)
-**Implementation commit:** pending
-**CI run:** [44231664015](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44231664015) on `08fe748707723a12be85f17bc4fe1525a0f165cf`; API, Terraform, secret and Maven scan jobs passed; frontend job failed npm audit due to a high severity picomatch advisory with no patched version listed.
+**Implementation commit:** `fab9c135cf1d18bf75f38d22939166ea41e43c13`
+**CI run:** [44234484421](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44234484421) passed at the exact implementation SHA; API integration/package, Terraform/TFLint/Checkov, production npm audit, Gitleaks, OSV, and container scans passed.
 
 ## Scope delivered
 
@@ -19,10 +19,10 @@
 
 | Check | Status | Evidence |
 |---|---|---|
-| PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files |
+| PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files under Windows PowerShell 5.1 |
 | PostgreSQL backup + checksum | PASS (empty-state drill) | Backup `drill-20261118-02`; SHA-256 and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifact remains local in `%TEMP%` |
 | Isolated restore | PASS (empty-state drill) | Restored to `recovery_drill_20261118_02`; source was not overwritten |
-| Flyway/schema and inventory/order consistency after restore | PARTIAL | 5 migrations, 22 tables, zero inventory invariant violations; no order/inventory data existed |
+| Flyway/schema, consistency, API restore smoke | PARTIAL PASS | 5 migrations, 22 tables, zero inventory invariant violations, API readiness UP and empty catalog endpoint successful; no order/inventory data existed |
 | Outbox/inbox recovery and event reconciliation | NOT RUN | No controlled recovery drill |
 | Redis loss/re-authentication | NOT RUN | Documented only |
 | RabbitMQ outage/restart/replay | NOT RUN | Existing messaging tests are not a Phase 9 backup/restore drill |
