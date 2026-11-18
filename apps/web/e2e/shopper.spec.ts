@@ -4,7 +4,13 @@ const password = 'E2E-only-Strong-Passphrase-2026!'
 
 async function registerAndSignIn(page: Page) {
   const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`
-  await page.goto('/register')
+  const registrationResponse = await page.goto('/register')
+  if (process.env.E2E_USE_EXTERNAL_WEB_SERVER === '1') {
+    expect(registrationResponse?.headers()['content-security-policy']).toContain("default-src 'self'")
+    expect(registrationResponse?.headers()['x-content-type-options']).toBe('nosniff')
+    expect(registrationResponse?.headers()['x-frame-options']).toBe('DENY')
+    expect(registrationResponse?.headers()['referrer-policy']).toBe('strict-origin-when-cross-origin')
+  }
   await page.getByLabel('First name').fill('E2E')
   await page.getByLabel('Last name').fill('Shopper')
   await page.getByLabel('Email').fill(email)

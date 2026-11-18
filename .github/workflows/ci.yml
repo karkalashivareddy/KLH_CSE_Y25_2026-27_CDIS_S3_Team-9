@@ -58,14 +58,32 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
       - name: Start local API and dependencies
-        run: docker compose up -d --build --wait --wait-timeout 180 api
+        run: docker compose up -d --build --wait --wait-timeout 180 api web
       - name: Seed isolated E2E catalog fixture
         run: docker compose exec -T postgres psql --username=cloudresilience --dbname=cloudresilience --set=ON_ERROR_STOP=1 --no-psqlrc < apps/web/e2e/fixtures/seed-catalog.sql
       - name: Run shopper, checkout, and insufficient-stock journeys
         working-directory: apps/web
         env:
           E2E_CHECKOUT: '1'
+          E2E_USE_EXTERNAL_WEB_SERVER: '1'
+          E2E_WEB_PORT: '5173'
         run: npm run test:e2e
+      - name: PostgreSQL order and payment restore drill
+        run: bash infrastructure/scripts/Test-PostgresE2ERecovery.sh ci-order-recovery recovery_e2e_${{ github.run_id }}_1 ${{ runner.temp }}/cloudresilience-recovery
+      - name: OWASP ZAP passive baseline
+        run: |
+          mkdir -p "${RUNNER_TEMP}/zap-results"
+          docker run --rm --network cloudresilience_application \
+            --volume "${RUNNER_TEMP}/zap-results:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:2.17.0 \
+            zap-baseline.py -t http://web:8080 -m 2 -I -r zap-baseline.html -J zap-baseline.json
+      - name: Retain OWASP ZAP reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: zap-baseline-${{ github.run_id }}
+          path: ${{ runner.temp }}/zap-results/
+          if-no-files-found: ignore
       - name: Show Compose logs on failure
         if: failure()
         run: docker compose logs --no-color api postgres redis rabbitmq
