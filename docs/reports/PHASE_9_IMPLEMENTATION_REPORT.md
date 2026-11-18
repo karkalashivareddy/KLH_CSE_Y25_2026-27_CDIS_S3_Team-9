@@ -6,7 +6,7 @@
 **Branch:** `main` (single-branch workflow; no PRs)
 **Base commit:** `1fe7b1308958b974758b069abbced544e48ac5c3` (Phase 8 integrated; hosted CI run [44108903172](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44108903172) passed for this exact SHA)
 **Implementation commit:** pending
-**CI run:** pending
+**CI run:** [44231664015](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44231664015) on `08fe748707723a12be85f17bc4fe1525a0f165cf`; API, Terraform, secret and Maven scan jobs passed; frontend job failed npm audit due to a high severity picomatch advisory with no patched version listed.
 
 ## Scope delivered
 
