@@ -1,12 +1,29 @@
 # CloudResilience
 
+<p align="center"><img src="docs/assets/cloudresilience-architecture.gif" alt="Animated CloudResilience architecture: React, Spring Boot, PostgreSQL outbox, RabbitMQ consumers and Redis sessions" width="100%"></p>
+
 **A secure, cost-conscious e-commerce platform and cloud resilience engineering project.**
 
 [![CI](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/workflows/ci.yml)
 
+![Java 25](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white) ![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4-6DB33F?logo=springboot&logoColor=white) ![React 19](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white) ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white) ![Terraform](https://img.shields.io/badge/Terraform-validated-7B42BC?logo=terraform&logoColor=white)
+
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
 > **Status: Phases 6–8 are implemented; Phases 9–10 remain incomplete.** Hosted run `44265982978` passed all 3 browser journeys and an isolated order/payment restore: 1 order and payment were recovered with matching database snapshots and API smoke. The web image started, but the host-published header probe did not return a response, so ZAP did not run. The latest workflow probes headers inside the container and scans it on the isolated Docker network. Actual RTO/RPO, dependency failure drills, the high-severity development dependency advisory and final security validation remain open. No cloud deployment or production operation is claimed. See [project handoff](PROJECT_COMPLETION_REPORT.md).
+
+## Project dashboard
+
+| Area | State |
+|---|---|
+| Phases | 1–8 implemented; Phases 9–10 in progress |
+| Architecture | Spring Boot modular monolith; React web app |
+| Data and events | PostgreSQL source of truth; transactional outbox; RabbitMQ at-least-once delivery; Redis sessions only |
+| Cloud | AWS Terraform implemented and statically validated; no cloud resources deployed |
+| Recovery | CI restored a synthetic order/payment into an isolated database; actual RTO/RPO not measured |
+| Open gates | Nginx runtime exits in current DAST job; high-severity dev dependency advisory open; monthly cloud estimates not available |
+
+Latest verified hosted run [44278969578](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44278969578) passed the three browser journeys and PostgreSQL recovery drill; the web container exited before header/DAST checks. The follow-up starts Nginx in the foreground and captures runtime logs. For verified scope, see the [validation matrix](docs/09-testing/FINAL_VALIDATION_MATRIX.md) and [project handoff](PROJECT_COMPLETION_REPORT.md).
 
 ## Product and target architecture
 
@@ -67,6 +84,7 @@ tests/                    Cross-application tests (as introduced)
 - [Project charter](docs/01-project-overview/PROJECT_CHARTER.md)
 - [Requirements](docs/02-requirements/REQUIREMENTS_SPECIFICATION.md)
 - [System architecture](docs/03-architecture/SYSTEM_ARCHITECTURE.md)
+- [Final system architecture](docs/03-architecture/FINAL_SYSTEM_ARCHITECTURE.md)
 - [Architecture decisions](docs/04-architecture-decisions/)
 - [Security and threat model](docs/05-security/SECURITY_ARCHITECTURE.md)
 - [Authentication and sessions](docs/05-security/AUTHENTICATION_AND_SESSIONS.md)
@@ -84,6 +102,9 @@ tests/                    Cross-application tests (as introduced)
 - [API endpoint reference](docs/10-deployment/API_ENDPOINTS.md)
 - [Testing strategy](docs/09-testing/TEST_STRATEGY.md)
 - [Toolchain versions](docs/10-deployment/TOOLCHAIN_VERSIONS.md)
+- [Final deployment guide](docs/10-deployment/FINAL_DEPLOYMENT_GUIDE.md)
+- [Final recovery summary](docs/12-disaster-recovery/FINAL_RECOVERY_SUMMARY.md)
+- [Project completion handoff](PROJECT_COMPLETION_REPORT.md)
 - [Team workflow](docs/11-team-workflow/BRANCHING_STRATEGY.md)
 
 ## Team

@@ -78,7 +78,7 @@ jobs:
       - name: Build deployable web container for DAST
         run: docker build --tag cloudresilience-web:dast ./apps/web
       - name: Start deployable web container for DAST
-        run: docker run --detach --name cloudresilience-web-dast --network cloudresilience_application --network-alias web cloudresilience-web:dast
+        run: docker run --detach --name cloudresilience-web-dast --network cloudresilience_application --network-alias web --entrypoint nginx cloudresilience-web:dast -g 'daemon off;'
       - name: Verify web security headers
         run: |
           headers_file="${RUNNER_TEMP}/web-response-headers.txt"
@@ -99,6 +99,21 @@ jobs:
         with:
           name: web-response-headers-${{ github.run_id }}
           path: ${{ runner.temp }}/web-response-headers.txt
+          if-no-files-found: ignore
+      - name: Capture web container diagnostics
+        if: always()
+        run: |
+          {
+            docker inspect cloudresilience-web-dast || true
+            docker logs cloudresilience-web-dast 2>&1 || true
+          } > "${RUNNER_TEMP}/web-container-diagnostics.txt"
+          cat "${RUNNER_TEMP}/web-container-diagnostics.txt"
+      - name: Retain web container diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: web-container-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/web-container-diagnostics.txt
           if-no-files-found: ignore
       - name: OWASP ZAP passive baseline
         run: |
