@@ -1,6 +1,6 @@
 # CloudResilience engineering handoff
 
-**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Run `44282141760` on `fdf151ec37ecbb9b42a0ca576d3f90278ae5687b` passed browser and recovery steps but failed before DAST. Retained logs found Nginx could not create `/tmp/nginx/nginx.pid` as UID 101. The fix moves the PID file into the cache directory and removes the root-owned PID file left by the image-build `nginx -t`; local container verification now starts Nginx and returns all five asserted headers. Its hosted result is pending.
+**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Hosted run `44309215656` on `977abdf68d116c62c156d262be9f49e0552a5ce6` passed all six CI jobs, including the three browser journeys, the PostgreSQL order/payment restore, all five asserted web security headers and the OWASP ZAP passive baseline (0 FAIL, 62 PASS, 6 WARN). The ZAP HTML/JSON reports were not retained because the container user could not write to the mounted directory; the workflow now makes that directory writable. Remaining open gates are listed below; no cloud deployment or production certification is claimed.
 
 ## Objectives and architecture
 
@@ -17,7 +17,7 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 | 7 | Implemented locally | Observability stack, dashboards, alerts and a catalog-only load test; no cloud-scale capacity claim. |
 | 8 | Terraform implemented and validated | Hosted validation includes fmt, backend-free init, validate, TFLint and Checkov. No apply or cloud deployment. |
 | 9 | Partial | Hosted run `44265982978` passed restoration of 1 order, 1 item, 1 payment, 1 reservation and event/inbox state into a fresh isolated DB; 5 Flyway migrations and API smoke passed; reported integrity mismatches were zero. Archive SHA-256 and counts are in the DR report. Procedure duration was 11 seconds, not RTO; RPO remains unmeasured. Redis loss, RabbitMQ outage/replay and cloud failover are not run. |
-| 10 | Partial | Hosted run `44282141760` passed all 3 browser journeys and order/payment restore. Nginx exited because its PID file path was not writable by UID 101; `nginx -t` had also left a root-owned PID file in the new path. The fix uses the cache directory and deletes that file after the build-time config test. Cost totals remain not estimated; no approved region/workload inputs. |
+| 10 | Partial | Hosted run `44309215656` (`977abdf`) passed all six jobs: 3 browser journeys, order/payment restore, direct web-image build/start, all five security headers and the ZAP passive baseline. ZAP logged 0 FAIL, 62 PASS and 6 WARN; its HTML/JSON reports were not uploaded because the container user could not write to `/zap/wrk`, so the workflow now makes that mount writable. Cost totals remain not estimated; no approved region/workload inputs. |
 
 ## Delivered engineering decisions
 
@@ -36,9 +36,10 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 - Hosted runs `44255857779` (`18042b6`) and `44264241686` (`82cb5c7`): Browser E2E (3 journeys) and PostgreSQL order/payment recovery passed; web startup/header steps failed before DAST.
 - Hosted run `44265982978` (`05295f2`): E2E, order/payment restore, direct web-image build/start, and all non-browser jobs passed. The response-header assertion failed, so ZAP was skipped. Its recovery artifact was downloaded and inspected; exact evidence is in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`.
 - Hosted run `44278969578` (`3a92fed`) saved a response diagnostic showing the web container had exited when `docker exec` ran. The follow-up explicitly runs Nginx in foreground and captures `docker inspect`/container logs before the header probe.
-- Hosted run `44282141760` (`fdf151e`) captured Nginx's exact error: `open() "/tmp/nginx/nginx.pid" failed (13: Permission denied)`. The pending fix sets the PID path to `/var/cache/nginx/nginx.pid` and removes the root-owned PID file created by the build-time `nginx -t`. A local image build now starts Nginx and returns the asserted CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy headers.
+- Hosted run `44282141760` (`fdf151e`) captured Nginx's exact error: `open() "/tmp/nginx/nginx.pid" failed (13: Permission denied)`. The fix sets the PID path to `/var/cache/nginx/nginx.pid` and removes the root-owned PID file created by the build-time `nginx -t`. A local image build then started Nginx and returned the asserted CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy headers; run `44309215656` confirmed this on the hosted runner.
+- Hosted run `44309215656` on `977abdf68d116c62c156d262be9f49e0552a5ce6`: **all six jobs passed**. Browser journeys **3/3**, order/payment restore and API smoke passed, and the response-header probe returned CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy (artifact `web-response-headers-44309215656`). ZAP passive baseline completed with **0 FAIL, 62 PASS, 6 WARN**. The ZAP report step logged `AccessDeniedException /zap/wrk/zap-baseline.html`, so the artifact contained no report; the workflow now makes the mounted results directory writable before the scan.
 - A high-severity development-toolchain advisory, GHSA-fc5q-39xc-vjpf (picomatch), remains open. Production dependency audit passing does not resolve this advisory.
-- ZAP baseline, if successful in the pending run, is passive scanning evidence only; it is not a penetration test. No external penetration test or formal audit was performed.
+- ZAP baseline is passive scanning evidence only; it is not a penetration test or a clean bill of health. Run `44309215656` recorded **6 warnings** (suspicious comments, Server version disclosure, storable/cacheable content, CSP wildcard directives, modern web application fingerprinting, missing Cross-Origin-Embedder-Policy) alongside 62 passing checks and 0 failures. No external penetration test or formal audit was performed.
 
 ## Recovery and cloud evidence
 
@@ -48,8 +49,8 @@ No AWS/Azure/GCP resources, database, DNS changes, production deployment, cross-
 
 ## Current handoff and next gates
 
-1. Verify the current main CI run after the Docker-runner follow-up; ensure all E2E, recovery, image, header and ZAP steps execute.
-2. Record the order/payment restore manifest and ZAP findings from CI artifacts; document counts/checksum without presenting the CI exercise as cloud RTO/RPO.
+1. Re-run main CI after the ZAP report-permission fix and confirm the HTML/JSON report artifacts upload. No other release-gate step is currently failing.
+2. Review the uploaded ZAP report and record counts/checksums without presenting the CI exercise as cloud RTO/RPO.
 3. Resolve or formally track the high-severity picomatch advisory; do not suppress it.
 4. Obtain region, currency, workload, SKU, HA, backup-retention and recovery-target assumptions before publishing cost totals.
 5. If later authorized, run cloud deployment and recovery only under a separate explicit deployment approval; nothing in this work provisioned resources.

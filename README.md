@@ -46,17 +46,6 @@
   <img src="docs/assets/readme-dashboard.svg" alt="Animated 3D repository dashboard with delivery phases, CI gates, runtime topology, observability and security" width="100%">
 </p>
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="https://github-readme-stats.vercel.app/api/pin/?username=karkalashivareddy&repo=KLH_CSE_Y25_2026-27_CDIS_S3_Team-9&show_owner=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=22D3EE&icon_color=34D399&text_color=C9D1D9" alt="CloudResilience repository card" width="100%">
-    </td>
-    <td width="50%" valign="top">
-      <img src="https://api.star-history.com/svg?repos=karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9&type=Date&theme=dark" alt="Star history" width="100%">
-    </td>
-  </tr>
-</table>
-
 | Signal | Live badge | Signal | Live badge |
 |---|---|---|---|
 | CI pipeline | [![CI](https://img.shields.io/github/actions/workflow/status/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/ci.yml?branch=main&style=flat-square&label=workflow)](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/workflows/ci.yml) | Last commit | ![Last commit](https://img.shields.io/github/last-commit/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9?branch=main&style=flat-square) |
@@ -65,10 +54,6 @@
 | Issues | ![Issues](https://img.shields.io/github/issues/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9?style=flat-square) | Pull requests | ![Pull requests](https://img.shields.io/github/issues-pr/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9?style=flat-square) |
 | Repository size | ![Repo size](https://img.shields.io/github/repo-size/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9?style=flat-square) | Primary language | ![Top language](https://img.shields.io/github/languages/top/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9?style=flat-square) |
 | Security policy | [![Security policy](https://img.shields.io/badge/security%20policy-present-34D399?style=flat-square&logo=shieldsdotio&logoColor=white)](SECURITY.md) | License | ![License](https://img.shields.io/badge/license-not%20declared-94A3B8?style=flat-square) |
-
-<p align="center">
-  <img src="https://contrib.rocks/image?repo=karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9" alt="Repository contributors" width="420">
-</p>
 
 ### Automated engineering gates
 

@@ -118,6 +118,7 @@ jobs:
       - name: OWASP ZAP passive baseline
         run: |
           mkdir -p "${RUNNER_TEMP}/zap-results"
+          chmod -R 777 "${RUNNER_TEMP}/zap-results"
           docker run --rm --network cloudresilience_application \
             --volume "${RUNNER_TEMP}/zap-results:/zap/wrk/:rw" \
             ghcr.io/zaproxy/zaproxy:2.17.0 \
