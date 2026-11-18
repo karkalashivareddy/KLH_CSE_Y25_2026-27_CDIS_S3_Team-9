@@ -13,7 +13,9 @@ RUN mkdir -p /tmp/nginx /var/cache/nginx/client_temp /var/cache/nginx/proxy_temp
 COPY nginx-unprivileged.conf /etc/nginx/nginx.conf
 COPY --from=build /workspace/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-RUN nginx -t
+# nginx -t runs as root and leaves a root-owned PID file behind. Remove it so
+# the unprivileged runtime user can create the PID file when the container starts.
+RUN nginx -t && rm -f /var/cache/nginx/nginx.pid
 USER 101:101
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1

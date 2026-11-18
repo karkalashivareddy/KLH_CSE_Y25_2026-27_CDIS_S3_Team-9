@@ -1,6 +1,6 @@
 # CloudResilience engineering handoff
 
-**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Latest verified workflow commit `3a92fed0a7a029520f51d463c34d4b323600521a` is on the single `main` branch; run `44278969578` passed browser and recovery steps but failed before DAST because the Nginx container had exited. The current follow-up starts Nginx directly in foreground and retains container diagnostics; its hosted result is pending.
+**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Run `44282141760` on `fdf151ec37ecbb9b42a0ca576d3f90278ae5687b` passed browser and recovery steps but failed before DAST. Retained logs found Nginx could not create `/tmp/nginx/nginx.pid` as UID 101. The fix moves the PID file into the cache directory and removes the root-owned PID file left by the image-build `nginx -t`; local container verification now starts Nginx and returns all five asserted headers. Its hosted result is pending.
 
 ## Objectives and architecture
 
@@ -17,7 +17,7 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 | 7 | Implemented locally | Observability stack, dashboards, alerts and a catalog-only load test; no cloud-scale capacity claim. |
 | 8 | Terraform implemented and validated | Hosted validation includes fmt, backend-free init, validate, TFLint and Checkov. No apply or cloud deployment. |
 | 9 | Partial | Hosted run `44265982978` passed restoration of 1 order, 1 item, 1 payment, 1 reservation and event/inbox state into a fresh isolated DB; 5 Flyway migrations and API smoke passed; reported integrity mismatches were zero. Archive SHA-256 and counts are in the DR report. Procedure duration was 11 seconds, not RTO; RPO remains unmeasured. Redis loss, RabbitMQ outage/replay and cloud failover are not run. |
-| 10 | Partial | Hosted run `44278969578` passed all 3 browser journeys and order/payment restore. The deployable Nginx process exited before header/ZAP validation. The latest follow-up starts Nginx directly in foreground and captures container logs. Cost totals remain not estimated; no approved region/workload inputs. |
+| 10 | Partial | Hosted run `44282141760` passed all 3 browser journeys and order/payment restore. Nginx exited because its PID file path was not writable by UID 101; `nginx -t` had also left a root-owned PID file in the new path. The fix uses the cache directory and deletes that file after the build-time config test. Cost totals remain not estimated; no approved region/workload inputs. |
 
 ## Delivered engineering decisions
 
@@ -36,6 +36,7 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 - Hosted runs `44255857779` (`18042b6`) and `44264241686` (`82cb5c7`): Browser E2E (3 journeys) and PostgreSQL order/payment recovery passed; web startup/header steps failed before DAST.
 - Hosted run `44265982978` (`05295f2`): E2E, order/payment restore, direct web-image build/start, and all non-browser jobs passed. The response-header assertion failed, so ZAP was skipped. Its recovery artifact was downloaded and inspected; exact evidence is in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`.
 - Hosted run `44278969578` (`3a92fed`) saved a response diagnostic showing the web container had exited when `docker exec` ran. The follow-up explicitly runs Nginx in foreground and captures `docker inspect`/container logs before the header probe.
+- Hosted run `44282141760` (`fdf151e`) captured Nginx's exact error: `open() "/tmp/nginx/nginx.pid" failed (13: Permission denied)`. The pending fix sets the PID path to `/var/cache/nginx/nginx.pid` and removes the root-owned PID file created by the build-time `nginx -t`. A local image build now starts Nginx and returns the asserted CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy headers.
 - A high-severity development-toolchain advisory, GHSA-fc5q-39xc-vjpf (picomatch), remains open. Production dependency audit passing does not resolve this advisory.
 - ZAP baseline, if successful in the pending run, is passive scanning evidence only; it is not a penetration test. No external penetration test or formal audit was performed.
 
