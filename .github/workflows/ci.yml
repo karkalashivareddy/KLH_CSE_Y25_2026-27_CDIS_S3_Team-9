@@ -58,18 +58,26 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
       - name: Start local API and dependencies
-        run: docker compose up -d --build --wait --wait-timeout 180 api web
+        run: docker compose up -d --build --wait --wait-timeout 180 api
       - name: Seed isolated E2E catalog fixture
         run: docker compose exec -T postgres psql --username=cloudresilience --dbname=cloudresilience --set=ON_ERROR_STOP=1 --no-psqlrc < apps/web/e2e/fixtures/seed-catalog.sql
       - name: Run shopper, checkout, and insufficient-stock journeys
         working-directory: apps/web
         env:
           E2E_CHECKOUT: '1'
-          E2E_USE_EXTERNAL_WEB_SERVER: '1'
-          E2E_WEB_PORT: '5173'
         run: npm run test:e2e
       - name: PostgreSQL order and payment restore drill
         run: bash infrastructure/scripts/Test-PostgresE2ERecovery.sh ci-order-recovery recovery_e2e_${{ github.run_id }}_1 ${{ runner.temp }}/cloudresilience-recovery
+      - name: Start deployable web container
+        run: docker compose up -d --build --wait --wait-timeout 180 web
+      - name: Verify web security headers
+        run: |
+          headers="$(curl --fail --silent --show-error --head http://127.0.0.1:5173/)"
+          grep --fixed-strings --ignore-case "Content-Security-Policy: default-src 'self'" <<<"$headers"
+          grep --fixed-strings --ignore-case 'Referrer-Policy: strict-origin-when-cross-origin' <<<"$headers"
+          grep --fixed-strings --ignore-case 'X-Content-Type-Options: nosniff' <<<"$headers"
+          grep --fixed-strings --ignore-case 'X-Frame-Options: DENY' <<<"$headers"
+          grep --fixed-strings --ignore-case 'Permissions-Policy: camera=(), microphone=(), geolocation=()' <<<"$headers"
       - name: OWASP ZAP passive baseline
         run: |
           mkdir -p "${RUNNER_TEMP}/zap-results"
@@ -86,7 +94,7 @@ jobs:
           if-no-files-found: ignore
       - name: Show Compose logs on failure
         if: failure()
-        run: docker compose logs --no-color api postgres redis rabbitmq
+        run: docker compose ps --all && docker compose logs --no-color api web postgres redis rabbitmq
       - name: Stop local Compose services
         if: always()
         run: docker compose down --volumes --remove-orphans
