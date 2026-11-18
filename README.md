@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6 and 7 are integrated and verified on `main`.** Phase 7 hosted CI passed 66 backend tests with 0 skipped, along with frontend, Gitleaks, and OSV checks. No cloud deployment or production operation is claimed.
+> **Status: Phases 6–8 are integrated on `main`.** Phase 8 Terraform validation and hosted CI (API integration, frontend, TFLint, Checkov, Trivy, Gitleaks, and OSV) passed at `1fe7b1308958b974758b069abbced544e48ac5c3`. Phases 9–10 documentation and recovery tooling are in progress; no cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
@@ -25,12 +25,14 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Orders and checkout | Phase 5 implementation present: cart-asserted checkout, snapshots, atomic inventory reservation, customer idempotency, state history and order APIs/UI |
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
+| AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
+| Disaster recovery | Local backup/isolated-restore scripts added; execution and recovery drill remain unverified without Docker |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 
-See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [Phase 6 implementation report](docs/reports/PHASE_6_IMPLEMENTATION_REPORT.md), [order/checkout design](docs/03-architecture/ORDER_CHECKOUT_DESIGN.md), [event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md), [event catalog](docs/03-architecture/EVENT_CATALOG.md), [catalog/inventory design](docs/03-architecture/CATALOG_INVENTORY_DESIGN.md), and [authentication/session security](docs/05-security/AUTHENTICATION_AND_SESSIONS.md) for evidence and scope.
+See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [Phase 6 implementation report](docs/reports/PHASE_6_IMPLEMENTATION_REPORT.md), [Phase 8 implementation report](docs/reports/PHASE_8_IMPLEMENTATION_REPORT.md), [Phase 9 implementation report](docs/reports/PHASE_9_IMPLEMENTATION_REPORT.md), [Phase 10 implementation report](docs/reports/PHASE_10_IMPLEMENTATION_REPORT.md), [AWS deployment guide](docs/10-deployment/AWS_DEPLOYMENT_GUIDE.md), [event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md), [DR restore runbook](docs/07-disaster-recovery/RESTORE_RUNBOOK.md), and [multi-cloud comparison](docs/03-architecture/MULTI_CLOUD_PORTABILITY.md) for evidence and scope.
 
 ## Quick start
 

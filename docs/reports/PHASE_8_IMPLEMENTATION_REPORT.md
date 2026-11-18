@@ -1,12 +1,12 @@
 # Phase 8: Terraform and AWS infrastructure report
 
-**Status:** Terraform source implemented; local formatting, backend-free initialization, and validation passed. Hosted CI, IaC scans, and container scans are pending. **No cloud resources were provisioned.**
+**Status:** Terraform source implemented and locally validated; hosted CI, IaC scans, container scans, dependency scan and secret scan passed on the exact `main` commit. **No cloud resources were provisioned.**
 
 **Date:** 2026-11-17
 **Branch:** `main` (repository-owner directed; no PRs)
 **Base commit:** `27d8be7` (Phase 7 report finalized)
-**Implementation commit:** pending
-**CI run:** pending
+**Implementation commit:** `1fe7b1308958b974758b069abbced544e48ac5c3`
+**CI run:** [44108903172](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44108903172) (success, exact SHA)
 
 ## Implemented scope
 
@@ -26,16 +26,18 @@
 | `terraform -chdir=infrastructure/terraform/environments/dev validate` | PASS | Local validation after the MQ and write-only secret changes |
 | Docker Compose configuration | PASS | `docker compose config --quiet`; Docker emitted a local config-file warning |
 | Frontend lint/typecheck/tests/build | PASS | 21 tests across 6 files; lint, typecheck and production build passed |
-| TFLint / Checkov | NOT RUN | Hosted CI pending |
-| API integration tests / Gitleaks / OSV / Trivy | NOT RUN FOR THIS CHANGESET | Hosted CI pending; Docker engine unavailable locally |
+| TFLint / Checkov | PASS | Hosted run 44108903172; required checks completed successfully |
+| API integration tests and package | PASS | Hosted `mvn verify -DrunIntegrationTests=true` succeeded; Docker image build and Trivy scan also succeeded |
+| Frontend checks and image scan | PASS | Hosted web job succeeded, including tests/build and Trivy scan |
+| Gitleaks / OSV | PASS | Hosted secret and Maven vulnerability scan jobs succeeded |
 | AWS credentialed plan | NOT RUN | No AWS credentials, approved account, region, or cost approval; no fake plan claimed |
 | Terraform apply / AWS resources | NOT AUTHORIZED / NOT RUN | No cloud provisioning performed |
 | Cost calculator estimate | NOT RUN | Workload and region assumptions were not provided; no invented figures included |
 
 ## Known limitations
 
-- Hosted CI must pass on the exact pushed `main` SHA before Phase 8 can be considered integrated.
-- TFLint, Checkov, and image scan results are pending hosted execution.
+- CI result is success on `1fe7b1308958b974758b069abbced544e48ac5c3`.
+- Checkov exceptions are inline with explanations for dev-only cost choices and provider-resource correlation gaps; WAF, TLS, IAM DB auth, RDS monitoring, KMS logs, versioning and VPC default-SG controls are enabled.
 - Service/API compatibility, region availability, CloudFormation secret-reference behavior, and a credentialed plan have not been verified against an AWS account.
 - GitHub OIDC deployment setup is documented as a future controlled workflow, not implemented.
 - Pricing estimate is deferred until a region and reproducible workload assumptions are selected.
