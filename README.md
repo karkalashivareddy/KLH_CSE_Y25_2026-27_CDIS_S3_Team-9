@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** All six hosted CI jobs passed at `dd7560dd3854bc6675bbe0f8919af7c4d2774a56` (run `44249204505`), including all 3 browser E2E journeys. Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper, simulated-checkout, and insufficient-stock journeys pass in hosted CI (3/3). Order/payment restore, dependency failure drills, measured RTO/RPO, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
+> **Status: Phases 6–8 are implemented; Phases 9–10 remain incomplete.** Hosted CI run `44249204505` passed all six jobs at `dd7560dd3854bc6675bbe0f8919af7c4d2774a56`, including 3 browser journeys. Follow-up run `44255857779` for `18042b632427e85d22a00aa2f21caef1067fd296` includes an order/payment restore drill, passive ZAP scan and web-header checks; its outcome was not available when this status was updated. Local empty-state and synthetic catalog/inventory restores passed. Actual RTO/RPO, dependency failure drills, the high-severity development dependency advisory and final security validation remain open. No cloud deployment or production operation is claimed. See [project handoff](PROJECT_COMPLETION_REPORT.md).
 
 ## Product and target architecture
 
@@ -26,14 +26,14 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Event-driven order processing | Phase 6 implementation present: transactional outbox, versioned events, RabbitMQ retry/DLQ topology, idempotent notification/activity consumers, operator replay APIs |
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
-| Disaster recovery | Empty-state and synthetic catalog/inventory backup/checksum/isolated-restore drills passed; order/payment recovery and RTO/RPO remain unverified |
+| Disaster recovery | Empty-state and synthetic catalog/inventory backup/checksum/isolated-restore drills passed; hosted order/payment recovery drill is pending verification; RTO/RPO remain unmeasured |
 | E2E test setup | Hosted Playwright registration/catalog/cart/checkout and insufficient-stock journeys passed 3/3 using the synthetic fixture. |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |
 | Automatic reservation expiry, remote payment provider and recovery automation | Not implemented; payment simulator only |
 
-See [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [Phase 6 implementation report](docs/reports/PHASE_6_IMPLEMENTATION_REPORT.md), [Phase 8 implementation report](docs/reports/PHASE_8_IMPLEMENTATION_REPORT.md), [Phase 9 implementation report](docs/reports/PHASE_9_IMPLEMENTATION_REPORT.md), [Phase 10 implementation report](docs/reports/PHASE_10_IMPLEMENTATION_REPORT.md), [AWS deployment guide](docs/10-deployment/AWS_DEPLOYMENT_GUIDE.md), [event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md), [DR restore runbook](docs/07-disaster-recovery/RESTORE_RUNBOOK.md), [multi-cloud architecture comparison](docs/03-architecture/MULTI_CLOUD_PORTABILITY.md), and [multi-cloud cost estimate worksheet](docs/08-finops/MULTI_CLOUD_COST_COMPARISON.md) for evidence and scope.
+See [project handoff](PROJECT_COMPLETION_REPORT.md), [Phase 1 closure](docs/reports/PHASE_1_CLOSURE_VERIFICATION.md), [Phase 2 implementation report](docs/reports/PHASE_2_IMPLEMENTATION_REPORT.md), [Phase 3 implementation report](docs/reports/PHASE_3_IMPLEMENTATION_REPORT.md), [Phase 4 implementation report](docs/reports/PHASE_4_IMPLEMENTATION_REPORT.md), [Phase 5 implementation report](docs/reports/PHASE_5_IMPLEMENTATION_REPORT.md), [Phase 6 implementation report](docs/reports/PHASE_6_IMPLEMENTATION_REPORT.md), [Phase 8 implementation report](docs/reports/PHASE_8_IMPLEMENTATION_REPORT.md), [Phase 9 implementation report](docs/reports/PHASE_9_IMPLEMENTATION_REPORT.md), [Phase 10 implementation report](docs/reports/PHASE_10_IMPLEMENTATION_REPORT.md), [AWS deployment guide](docs/10-deployment/AWS_DEPLOYMENT_GUIDE.md), [event-driven architecture](docs/03-architecture/EVENT_DRIVEN_ARCHITECTURE.md), [DR restore runbook](docs/07-disaster-recovery/RESTORE_RUNBOOK.md), [multi-cloud architecture comparison](docs/03-architecture/MULTI_CLOUD_PORTABILITY.md), and [multi-cloud cost estimate worksheet](docs/08-finops/MULTI_CLOUD_COST_COMPARISON.md) for evidence and scope.
 
 ## Quick start
 
@@ -53,7 +53,7 @@ apps/web/                 React + TypeScript frontend
 apps/api/                 Spring Boot modular-monolith API
 services/                 Future worker boundaries (not implemented)
 packages/                 Future shared contracts (not implemented)
-infrastructure/           Future cloud/IaC design and implementations
+infrastructure/           Terraform modules and local recovery scripts
 platform/                 Local/container/observability tooling
 docs/                     Product, architecture, security, testing, operations
 tests/                    Cross-application tests (as introduced)
