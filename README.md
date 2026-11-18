@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** The latest verified main CI passed at `54d9a69f3200a9bd4cfa756e77afac9d70230a7d`. Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; browser E2E execution, order/payment restore, Redis/RabbitMQ failure drills, measured RTO/RPO, and final security validation remain open. No cloud deployment or production operation is claimed.
+> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** Hosted CI passed at `20329ba75f2b5e60bfb0847f0221d73d226805ff`. Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper and simulated-checkout success journeys pass locally (2/2). Order/payment restore, dependency failure drills, measured RTO/RPO, failure-path E2E, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
@@ -27,7 +27,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
 | Disaster recovery | Empty-state and synthetic catalog/inventory backup/checksum/isolated-restore drills passed; order/payment recovery and RTO/RPO remain unverified |
-| E2E test setup | Local Playwright customer journey added; discovery passes, browser execution not verified (Chromium not installed) |
+| E2E test setup | Local Playwright registration/catalog/cart/checkout success journeys passed 2/2 with synthetic stock; failure journeys and hosted E2E remain unverified. Fixture seed script is present but its database execution is not yet verified. |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |

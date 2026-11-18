@@ -14,7 +14,7 @@ async function registerAndSignIn(page: Page) {
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page.getByText(email)).toBeVisible()
+  await expect(page.getByRole('complementary').getByText(email)).toBeVisible()
   return email
 }
 
@@ -46,5 +46,5 @@ test('customer can add a seeded product and complete simulated checkout', async 
   await page.getByRole('button', { name: /Place order/ }).click()
   await expect(page).toHaveURL(/\/orders\/[0-9a-f-]+$/i)
   await expect(page.getByRole('heading', { name: 'Order details' })).toBeVisible()
-  await expect(page.getByText('Payment succeeded')).toBeVisible()
+  await expect(page.getByText('Payment succeeded', { exact: true })).toBeVisible()
 })

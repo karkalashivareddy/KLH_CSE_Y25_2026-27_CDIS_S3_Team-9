@@ -5,8 +5,8 @@
 **Date:** 2026-11-18
 **Branch:** `main` (single-branch workflow; no PRs)
 **Base commit:** `54d9a69f3200a9bd4cfa756e77afac9d70230a7d` (latest verified main before this work; hosted CI run [44235127270](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44235127270) passed for this exact SHA)
-**Implementation commit:** Pending direct integration on `main`.
-**CI run:** Pending for the resulting commit.
+**Implementation commit:** `20329ba75f2b5e60bfb0847f0221d73d226805ff` (direct push on `main`).
+**CI run:** [44240920362](https://github.com/karkalashivareddy/KLH_CSE_Y25_2026-27_CDIS_S3_Team-9/actions/runs/44240920362) passed at the exact implementation SHA; hosted checks include API integration/package, Terraform/TFLint/Checkov, npm production audit, Gitleaks, OSV, and container scans.
 
 ## Scope delivered
 
@@ -22,7 +22,7 @@
 | PowerShell script syntax | PASS | Parser validation passed for all three PowerShell files under Windows PowerShell 5.1 |
 | PostgreSQL backup + checksum | PASS (empty and synthetic populated drills) | IDs `drill-20261118-02` and `drill-20261118-05`; hashes and metadata in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`; artifacts remain local in `%TEMP%` |
 | Isolated restore | PASS (empty and synthetic populated drills) | Restored to `recovery_drill_20261118_02` and `recovery_drill_20261118_05`; source application DB was not overwritten |
-| Flyway/schema, inventory ledger and API restore smoke | PARTIAL PASS | Empty-state API readiness and catalog smoke passed; populated drill recovered 5 Flyway records, 1 product, 1 inventory row, 2 movements, zero inventory invariant/ledger mismatches. Orders/payments were absent from fixture. |
+| Flyway/schema, inventory ledger and API restore smoke | PARTIAL PASS | Empty-state API readiness/catalog smoke passed; populated drill recovered 5 Flyway records, 1 product, 1 inventory row, 2 movements, zero inventory invariant/ledger mismatches. A temporary API on the restored DB returned readiness UP and the recovered product. Orders/payments were absent from fixture. |
 | Outbox/inbox recovery and event reconciliation | NOT RUN | No controlled recovery drill |
 | Redis loss/re-authentication | NOT RUN | Documented only |
 | RabbitMQ outage/restart/replay | NOT RUN | Existing messaging tests are not a Phase 9 backup/restore drill |
@@ -31,4 +31,4 @@
 
 ## Limitations
 
-The drills exposed and fixed database selection, user selection, and PowerShell 5.1 UTF-8 metadata issues. A guarded `-SourceDatabase drtest_*` option supports disposable local fixtures only. The populated drill did not include order/payment data or run the API against the recovered fixture; outbox reconciliation, Redis/RabbitMQ failure drills, and measured RTO/RPO remain unverified. Compose volumes are not backups. Terraform RDS settings remain unprovisioned. Four-hour RTO and 15-minute RPO are unapproved targets. No cloud or destructive operation was executed.
+The drills exposed and fixed database selection, user selection, and PowerShell 5.1 UTF-8 metadata issues. A guarded `-SourceDatabase drtest_*` option supports disposable local fixtures only. The populated drill did not include order/payment data; outbox event reconciliation, Redis/RabbitMQ failure drills, and measured RTO/RPO remain unverified. Compose volumes are not backups. Terraform RDS settings remain unprovisioned. Four-hour RTO and 15-minute RPO are unapproved targets. No cloud or destructive operation was executed.
