@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="740" viewBox="0 0 1280 740" role="img" aria-labelledby="dashTitle dashDesc">
+  <title id="dashTitle">CloudResilience repository dashboard</title>
+  <desc id="dashDesc">An animated dashboard showing delivery phases, CI gates, runtime topology, observability and security posture for the CloudResilience repository.</desc>
+
+  <defs>
+    <linearGradient id="dashBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="0.55" stop-color="#06101f"/>
+      <stop offset="1" stop-color="#0a0f1d"/>
+    </linearGradient>
+    <radialGradient id="dashGlowCyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="dashGlowViolet" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dashAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="cardFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.065"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="panelFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1426"/>
+      <stop offset="1" stop-color="#070f1e"/>
+    </linearGradient>
+    <linearGradient id="dashCyanTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="dashCyanFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e7490"/>
+      <stop offset="1" stop-color="#082f49"/>
+    </linearGradient>
+    <linearGradient id="dashGreenTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6ee7b7"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="dashGreenFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#047857"/>
+      <stop offset="1" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="dashBlueTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#93c5fd"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="dashBlueFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="dashOrangeTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fdba74"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="dashOrangeFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c2410c"/>
+      <stop offset="1" stop-color="#431407"/>
+    </linearGradient>
+    <linearGradient id="dashRedTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fda4af"/>
+      <stop offset="1" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="dashRedFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#be123c"/>
+      <stop offset="1" stop-color="#4c0519"/>
+    </linearGradient>
+    <filter id="dashShadow" x="-30%" y="-30%" width="170%" height="190%">
+      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <pattern id="dashGrid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#7dd3fc" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <style>
+    .dash-float { animation: dashFloat 6.8s ease-in-out infinite; }
+    .dash-float-b { animation: dashFloat 8.1s ease-in-out -2.1s infinite; }
+    .dash-pulse { animation: dashPulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .dash-pulse-slow { animation: dashPulse 3.8s ease-in-out -1.4s infinite; transform-box: fill-box; transform-origin: center; }
+    .dash-flow { stroke-dasharray: 5 10; animation: dashFlow 2.7s linear infinite; }
+    .dash-shimmer { animation: dashShimmer 4.8s ease-in-out infinite; }
+    .dash-shimmer-b { animation: dashShimmer 4.8s ease-in-out -2.4s infinite; }
+    @keyframes dashFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes dashPulse {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.18); }
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -60; }
+    }
+    @keyframes dashShimmer {
+      0%, 100% { opacity: 0.28; }
+      50% { opacity: 0.8; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dash-float, .dash-float-b, .dash-pulse, .dash-pulse-slow, .dash-flow, .dash-shimmer, .dash-shimmer-b {
+        animation: none;
+      }
+    }
+  </style>
+
+  <rect width="1280" height="740" fill="url(#dashBg)"/>
+  <circle cx="1080" cy="88" r="260" fill="url(#dashGlowCyan)"/>
+  <circle cx="142" cy="650" r="280" fill="url(#dashGlowViolet)"/>
+  <rect width="1280" height="740" fill="url(#dashGrid)"/>
+
+  <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif">
+    <rect x="48" y="48" width="4" height="20" rx="2" fill="url(#dashAccent)"/>
+    <text x="66" y="65" fill="#67e8f9" font-size="12.5" font-weight="700" letter-spacing="3">REPOSITORY INTELLIGENCE</text>
+    <text x="48" y="108" fill="#f8fafc" font-size="36" font-weight="800" letter-spacing="-1">Delivery &amp; resilience dashboard</text>
+    <text x="48" y="136" fill="#94a3b8" font-size="14.5" font-weight="500">CloudResilience · CI evidence, runtime topology and open engineering gates</text>
+
+    <g>
+      <rect x="992" y="50" width="240" height="48" rx="24" fill="#06121d" stroke="#22d3ee" stroke-opacity="0.32"/>
+      <circle cx="1018" cy="74" r="5" fill="#34d399" class="dash-pulse"/>
+      <text x="1034" y="79" fill="#a7f3d0" font-size="11.5" font-weight="700" letter-spacing="1.6">CI · EVERY PUSH TO MAIN</text>
+    </g>
+  </g>
+
+  <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif">
+    <g>
+      <rect x="48" y="158" width="266" height="112" rx="16" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="48" y="158" width="266" height="3" rx="1.5" fill="#22d3ee" class="dash-shimmer"/>
+      <text x="70" y="190" fill="#67e8f9" font-size="10.5" font-weight="700" letter-spacing="2">PHASES 01–08</text>
+      <text x="70" y="224" fill="#f8fafc" font-size="24" font-weight="800">Implemented</text>
+      <text x="70" y="250" fill="#94a3b8" font-size="11.5" font-weight="500">Validated locally and in hosted CI</text>
+    </g>
+    <g>
+      <rect x="354" y="158" width="266" height="112" rx="16" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="354" y="158" width="266" height="3" rx="1.5" fill="#34d399" class="dash-shimmer-b"/>
+      <text x="376" y="190" fill="#6ee7b7" font-size="10.5" font-weight="700" letter-spacing="2">BROWSER JOURNEYS</text>
+      <text x="376" y="224" fill="#f8fafc" font-size="24" font-weight="800">3 / 3</text>
+      <text x="376" y="250" fill="#94a3b8" font-size="11.5" font-weight="500">Shopper · checkout · stock guard</text>
+    </g>
+    <g>
+      <rect x="660" y="158" width="266" height="112" rx="16" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="660" y="158" width="266" height="3" rx="1.5" fill="#60a5fa" class="dash-shimmer"/>
+      <text x="682" y="190" fill="#93c5fd" font-size="10.5" font-weight="700" letter-spacing="2">RECOVERY DRILL</text>
+      <text x="682" y="224" fill="#f8fafc" font-size="24" font-weight="800">1 order</text>
+      <text x="682" y="250" fill="#94a3b8" font-size="11.5" font-weight="500">Isolated restore + API smoke</text>
+    </g>
+    <g>
+      <rect x="966" y="158" width="266" height="112" rx="16" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="966" y="158" width="266" height="3" rx="1.5" fill="#fb923c" class="dash-shimmer-b"/>
+      <text x="988" y="190" fill="#fdba74" font-size="10.5" font-weight="700" letter-spacing="2">CLOUD DEPLOYMENTS</text>
+      <text x="988" y="224" fill="#f8fafc" font-size="24" font-weight="800">0</text>
+      <text x="988" y="250" fill="#94a3b8" font-size="11.5" font-weight="500">No paid resources provisioned</text>
+    </g>
+  </g>
+
+  <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif">
+    <rect x="48" y="294" width="604" height="330" rx="18" fill="url(#panelFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+    <rect x="676" y="294" width="556" height="330" rx="18" fill="url(#panelFill)" stroke="#ffffff" stroke-opacity="0.09"/>
+
+    <text x="74" y="329" fill="#e2e8f0" font-size="12.5" font-weight="700" letter-spacing="2.2">CI DELIVERY PIPELINE</text>
+    <text x="596" y="329" fill="#64748b" font-size="11" font-weight="600" text-anchor="end">6 GATES</text>
+    <path d="M90 368V570" stroke="#22d3ee" stroke-opacity="0.3" stroke-width="1.3" class="dash-flow"/>
+
+    <g font-size="12.5" font-weight="600">
+      <g>
+        <circle cx="90" cy="368" r="5" fill="#34d399" class="dash-pulse"/>
+        <text x="112" y="373" fill="#dbeafe">Secret history scan</text>
+        <rect x="490" y="356" width="136" height="24" rx="12" fill="#052e1b" stroke="#34d399" stroke-opacity="0.34"/>
+        <text x="558" y="372" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">AUTOMATED</text>
+      </g>
+      <g>
+        <circle cx="90" cy="404" r="5" fill="#22d3ee" class="dash-pulse-slow"/>
+        <text x="112" y="409" fill="#dbeafe">Web lint · typecheck · test · build</text>
+        <rect x="490" y="392" width="136" height="24" rx="12" fill="#052e1b" stroke="#34d399" stroke-opacity="0.34"/>
+        <text x="558" y="408" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">AUTOMATED</text>
+      </g>
+      <g>
+        <circle cx="90" cy="440" r="5" fill="#60a5fa" class="dash-pulse"/>
+        <text x="112" y="445" fill="#dbeafe">API verify + Testcontainers</text>
+        <rect x="490" y="428" width="136" height="24" rx="12" fill="#052e1b" stroke="#34d399" stroke-opacity="0.34"/>
+        <text x="558" y="444" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">AUTOMATED</text>
+      </g>
+      <g>
+        <circle cx="90" cy="476" r="5" fill="#a78bfa" class="dash-pulse-slow"/>
+        <text x="112" y="481" fill="#dbeafe">Terraform fmt · validate · TFLint · Checkov</text>
+        <rect x="490" y="464" width="136" height="24" rx="12" fill="#052e1b" stroke="#34d399" stroke-opacity="0.34"/>
+        <text x="558" y="480" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">AUTOMATED</text>
+      </g>
+      <g>
+        <circle cx="90" cy="512" r="5" fill="#fb923c" class="dash-pulse"/>
+        <text x="112" y="517" fill="#dbeafe">Playwright E2E + recovery drill</text>
+        <rect x="490" y="500" width="136" height="24" rx="12" fill="#052e1b" stroke="#34d399" stroke-opacity="0.34"/>
+        <text x="558" y="516" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">AUTOMATED</text>
+      </g>
+      <g>
+        <circle cx="90" cy="548" r="5" fill="#fb7185" class="dash-pulse-slow"/>
+        <text x="112" y="553" fill="#dbeafe">Nginx header gate + OWASP ZAP</text>
+        <rect x="490" y="536" width="136" height="24" rx="12" fill="#2a1605" stroke="#fb923c" stroke-opacity="0.42"/>
+        <text x="558" y="552" fill="#fed7aa" font-size="9.5" font-weight="700" letter-spacing="1.2" text-anchor="middle">HARDENING</text>
+      </g>
+    </g>
+
+    <text x="702" y="329" fill="#e2e8f0" font-size="12.5" font-weight="700" letter-spacing="2.2">RUNTIME TOPOLOGY</text>
+    <text x="1206" y="329" fill="#64748b" font-size="11" font-weight="600" text-anchor="end">MODULAR MONOLITH</text>
+
+    <g filter="url(#dashShadow)" class="dash-float">
+      <polygon points="738,359 752,350 1048,350 1034,359" fill="url(#dashCyanTop)"/>
+      <rect x="738" y="359" width="296" height="34" rx="7" fill="url(#dashCyanFront)"/>
+      <polygon points="1034,359 1048,350 1048,384 1034,393" fill="#082f49"/>
+      <rect x="752" y="367" width="12" height="12" rx="4" fill="#67e8f9"/>
+      <text x="774" y="381" fill="#ecfeff" font-size="13.5" font-weight="700">React 19</text>
+      <text x="995" y="381" fill="#a5f3fc" font-size="9.5" font-weight="700" letter-spacing="1.1" text-anchor="end">WEB</text>
+    </g>
+    <g filter="url(#dashShadow)" class="dash-float-b">
+      <polygon points="744,405 758,396 1054,396 1040,405" fill="url(#dashGreenTop)"/>
+      <rect x="744" y="405" width="296" height="34" rx="7" fill="url(#dashGreenFront)"/>
+      <polygon points="1040,405 1054,396 1054,430 1040,439" fill="#022c22"/>
+      <rect x="758" y="413" width="12" height="12" rx="4" fill="#6ee7b7"/>
+      <text x="780" y="427" fill="#ecfdf5" font-size="13.5" font-weight="700">Spring Boot 4</text>
+      <text x="995" y="427" fill="#a7f3d0" font-size="9.5" font-weight="700" letter-spacing="1.1" text-anchor="end">API</text>
+    </g>
+    <g filter="url(#dashShadow)" class="dash-float">
+      <polygon points="750,451 764,442 1060,442 1046,451" fill="url(#dashBlueTop)"/>
+      <rect x="750" y="451" width="296" height="34" rx="7" fill="url(#dashBlueFront)"/>
+      <polygon points="1046,451 1060,442 1060,476 1046,485" fill="#172554"/>
+      <rect x="764" y="459" width="12" height="12" rx="4" fill="#93c5fd"/>
+      <text x="786" y="473" fill="#eff6ff" font-size="13.5" font-weight="700">PostgreSQL 17</text>
+      <text x="995" y="473" fill="#bfdbfe" font-size="9.5" font-weight="700" letter-spacing="1.1" text-anchor="end">STATE</text>
+    </g>
+    <g filter="url(#dashShadow)" class="dash-float-b">
+      <polygon points="756,497 770,488 1066,488 1052,497" fill="url(#dashOrangeTop)"/>
+      <rect x="756" y="497" width="296" height="34" rx="7" fill="url(#dashOrangeFront)"/>
+      <polygon points="1052,497 1066,488 1066,522 1052,531" fill="#431407"/>
+      <rect x="770" y="505" width="12" height="12" rx="4" fill="#fdba74"/>
+      <text x="792" y="519" fill="#fff7ed" font-size="13.5" font-weight="700">RabbitMQ</text>
+      <text x="995" y="519" fill="#fed7aa" font-size="9.5" font-weight="700" letter-spacing="1.1" text-anchor="end">EVENTS</text>
+    </g>
+    <g filter="url(#dashShadow)" class="dash-float">
+      <polygon points="762,543 776,534 1072,534 1058,543" fill="url(#dashRedTop)"/>
+      <rect x="762" y="543" width="296" height="34" rx="7" fill="url(#dashRedFront)"/>
+      <polygon points="1058,543 1072,534 1072,568 1058,577" fill="#4c0519"/>
+      <rect x="776" y="551" width="12" height="12" rx="4" fill="#fda4af"/>
+      <text x="798" y="565" fill="#fff1f2" font-size="13.5" font-weight="700">Redis</text>
+      <text x="995" y="565" fill="#fecdd3" font-size="9.5" font-weight="700" letter-spacing="1.1" text-anchor="end">SESSIONS</text>
+    </g>
+
+    <path d="M734 374V558" stroke="#22d3ee" stroke-opacity="0.38" stroke-width="1.3" class="dash-flow"/>
+    <circle cx="734" cy="374" r="3.5" fill="#22d3ee" class="dash-pulse"/>
+    <circle cx="734" cy="558" r="3.5" fill="#34d399" class="dash-pulse-slow"/>
+  </g>
+
+  <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif">
+    <rect x="48" y="648" width="604" height="56" rx="14" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <rect x="676" y="648" width="556" height="56" rx="14" fill="url(#cardFill)" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <circle cx="72" cy="676" r="4" fill="#22d3ee" class="dash-pulse"/>
+    <text x="86" y="673" fill="#67e8f9" font-size="9.5" font-weight="700" letter-spacing="1.8">OBSERVABILITY</text>
+    <text x="86" y="691" fill="#cbd5e1" font-size="11" font-weight="600">Prometheus · Grafana · Loki · Tempo · OpenTelemetry</text>
+
+    <circle cx="700" cy="676" r="4" fill="#34d399" class="dash-pulse-slow"/>
+    <text x="714" y="673" fill="#6ee7b7" font-size="9.5" font-weight="700" letter-spacing="1.8">SECURITY</text>
+    <text x="714" y="691" fill="#cbd5e1" font-size="11" font-weight="600">Gitleaks · Trivy · OSV · TFLint · Checkov · OWASP ZAP</text>
+  </g>
+
+  <g class="dash-shimmer" opacity="0.5">
+    <circle cx="1216" cy="118" r="2.2" fill="#67e8f9"/>
+    <circle cx="1178" cy="144" r="1.8" fill="#a5b4fc"/>
+    <circle cx="106" cy="284" r="1.8" fill="#6ee7b7"/>
+  </g>
+</svg>

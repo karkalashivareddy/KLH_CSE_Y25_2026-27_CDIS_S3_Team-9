@@ -1,0 +1,282 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="480" viewBox="0 0 1280 480" role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">CloudResilience engineering dashboard</title>
+  <desc id="heroDesc">An animated 3D banner for CloudResilience, a secure event-driven e-commerce platform built with React, Spring Boot, PostgreSQL, RabbitMQ and Redis.</desc>
+
+  <defs>
+    <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#030712"/>
+      <stop offset="0.52" stop-color="#071124"/>
+      <stop offset="1" stop-color="#0b1020"/>
+    </linearGradient>
+    <radialGradient id="heroGlowCyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="heroGlowViolet" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="heroGlowEmerald" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#34d399" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="heroTitleGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.46" stop-color="#a5f3fc"/>
+      <stop offset="1" stop-color="#c4b5fd"/>
+    </linearGradient>
+    <linearGradient id="heroAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.52" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="heroFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="layerCyanTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="layerCyanFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e7490"/>
+      <stop offset="1" stop-color="#083344"/>
+    </linearGradient>
+    <linearGradient id="layerGreenTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6ee7b7"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="layerGreenFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#047857"/>
+      <stop offset="1" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="layerBlueTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#93c5fd"/>
+      <stop offset="1" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="layerBlueFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="layerOrangeTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fdba74"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="layerOrangeFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c2410c"/>
+      <stop offset="1" stop-color="#431407"/>
+    </linearGradient>
+    <linearGradient id="layerRedTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fda4af"/>
+      <stop offset="1" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="layerRedFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#be123c"/>
+      <stop offset="1" stop-color="#4c0519"/>
+    </linearGradient>
+    <linearGradient id="pillFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.035"/>
+    </linearGradient>
+    <filter id="heroSoftGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="heroShadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.48"/>
+    </filter>
+    <filter id="layerShadow" x="-30%" y="-30%" width="170%" height="190%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <pattern id="heroGrid" width="52" height="52" patternUnits="userSpaceOnUse">
+      <path d="M52 0H0V52" fill="none" stroke="#7dd3fc" stroke-opacity="0.16" stroke-width="1"/>
+    </pattern>
+    <clipPath id="floorClip"><rect x="0" y="386" width="1280" height="94"/></clipPath>
+  </defs>
+
+  <style>
+    .float-a { animation: heroFloat 6.4s ease-in-out infinite; }
+    .float-b { animation: heroFloat 7.6s ease-in-out -1.8s infinite; }
+    .float-c { animation: heroFloat 8.4s ease-in-out -3.2s infinite; }
+    .float-d { animation: heroFloat 7s ease-in-out -4.1s infinite; }
+    .float-e { animation: heroFloat 8.8s ease-in-out -2.4s infinite; }
+    .pulse-soft { animation: heroPulse 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .pulse-slow { animation: heroPulse 4.2s ease-in-out -1.1s infinite; transform-box: fill-box; transform-origin: center; }
+    .flow-line { stroke-dasharray: 5 11; animation: heroFlow 2.8s linear infinite; }
+    .shimmer { animation: heroShimmer 4.6s ease-in-out infinite; }
+    .shimmer-delay { animation: heroShimmer 4.6s ease-in-out -2.3s infinite; }
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-9px); }
+    }
+    @keyframes heroPulse {
+      0%, 100% { opacity: 0.38; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.16); }
+    }
+    @keyframes heroFlow {
+      to { stroke-dashoffset: -64; }
+    }
+    @keyframes heroShimmer {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.82; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .float-a, .float-b, .float-c, .float-d, .float-e, .pulse-soft, .pulse-slow, .flow-line, .shimmer, .shimmer-delay {
+        animation: none;
+      }
+    }
+  </style>
+
+  <rect width="1280" height="480" fill="url(#heroBg)"/>
+  <circle cx="1055" cy="88" r="260" fill="url(#heroGlowCyan)"/>
+  <circle cx="208" cy="430" r="260" fill="url(#heroGlowViolet)"/>
+  <circle cx="640" cy="460" r="260" fill="url(#heroGlowEmerald)"/>
+  <rect width="1280" height="480" fill="url(#heroGrid)" opacity="0.28"/>
+
+  <g opacity="0.5">
+    <path d="M0 404H1280" stroke="#22d3ee" stroke-opacity="0.18"/>
+    <path d="M0 424H1280" stroke="#22d3ee" stroke-opacity="0.12"/>
+    <path d="M0 450H1280" stroke="#22d3ee" stroke-opacity="0.08"/>
+    <g clip-path="url(#floorClip)">
+      <path d="M640 386L-120 480M640 386L120 480M640 386L360 480M640 386L600 480M640 386L840 480M640 386L1080 480M640 386L1400 480" stroke="#22d3ee" stroke-opacity="0.16"/>
+    </g>
+  </g>
+  <rect x="0" y="386" width="1280" height="94" fill="url(#heroFloor)" opacity="0.55"/>
+
+  <g class="shimmer" opacity="0.55">
+    <circle cx="1180" cy="56" r="3.5" fill="#67e8f9"/>
+    <circle cx="1212" cy="92" r="2" fill="#a5b4fc"/>
+    <circle cx="1128" cy="104" r="2.5" fill="#6ee7b7"/>
+  </g>
+  <g class="shimmer-delay" opacity="0.45">
+    <circle cx="96" cy="86" r="2.5" fill="#a5b4fc"/>
+    <circle cx="144" cy="58" r="2" fill="#67e8f9"/>
+    <circle cx="52" cy="304" r="2" fill="#6ee7b7"/>
+  </g>
+
+  <g>
+    <rect x="70" y="96" width="4" height="22" rx="2" fill="url(#heroAccent)"/>
+    <text x="88" y="114" fill="#7dd3fc" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="14" font-weight="700" letter-spacing="3.4">CLOUD INFRASTRUCTURE &amp; SERVICES · TEAM 9</text>
+
+    <text x="68" y="196" fill="url(#heroTitleGradient)" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="74" font-weight="800" letter-spacing="-2.4">CloudResilience</text>
+
+    <text x="72" y="238" fill="#cbd5e1" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="22" font-weight="500">Secure e-commerce. Event-driven by design.</text>
+    <text x="72" y="270" fill="#94a3b8" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="22" font-weight="500">Resilience you can verify — not just describe.</text>
+
+    <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="13.5" font-weight="600">
+      <g>
+        <rect x="72" y="300" width="92" height="36" rx="18" fill="url(#pillFill)" stroke="#22d3ee" stroke-opacity="0.4"/>
+        <circle cx="92" cy="318" r="4" fill="#22d3ee"/>
+        <text x="104" y="323" fill="#cffafe">Java 25</text>
+      </g>
+      <g>
+        <rect x="174" y="300" width="100" height="36" rx="18" fill="url(#pillFill)" stroke="#34d399" stroke-opacity="0.4"/>
+        <circle cx="194" cy="318" r="4" fill="#34d399"/>
+        <text x="206" y="323" fill="#d1fae5">React 19</text>
+      </g>
+      <g>
+        <rect x="284" y="300" width="140" height="36" rx="18" fill="url(#pillFill)" stroke="#60a5fa" stroke-opacity="0.4"/>
+        <circle cx="304" cy="318" r="4" fill="#60a5fa"/>
+        <text x="316" y="323" fill="#dbeafe">PostgreSQL 17</text>
+      </g>
+      <g>
+        <rect x="434" y="300" width="124" height="36" rx="18" fill="url(#pillFill)" stroke="#fb923c" stroke-opacity="0.4"/>
+        <circle cx="454" cy="318" r="4" fill="#fb923c"/>
+        <text x="466" y="323" fill="#ffedd5">RabbitMQ</text>
+      </g>
+      <g>
+        <rect x="568" y="300" width="92" height="36" rx="18" fill="url(#pillFill)" stroke="#fb7185" stroke-opacity="0.4"/>
+        <circle cx="588" cy="318" r="4" fill="#fb7185"/>
+        <text x="600" y="323" fill="#ffe4e6">Redis</text>
+      </g>
+    </g>
+
+    <g transform="translate(72 374)">
+      <line x1="0" y1="0" x2="600" y2="0" stroke="#ffffff" stroke-opacity="0.1"/>
+      <g font-family="'Segoe UI', 'Inter', system-ui, sans-serif">
+        <text x="0" y="30" fill="#e2e8f0" font-size="18" font-weight="700">8</text>
+        <text x="18" y="30" fill="#94a3b8" font-size="12.5" font-weight="600" letter-spacing="0.6">PHASES IMPLEMENTED</text>
+        <text x="222" y="30" fill="#e2e8f0" font-size="18" font-weight="700">3 / 3</text>
+        <text x="258" y="30" fill="#94a3b8" font-size="12.5" font-weight="600" letter-spacing="0.6">BROWSER JOURNEYS</text>
+        <text x="448" y="30" fill="#e2e8f0" font-size="18" font-weight="700">0</text>
+        <text x="464" y="30" fill="#94a3b8" font-size="12.5" font-weight="600" letter-spacing="0.6">CLOUD DEPLOYMENTS</text>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(748 76)">
+    <rect x="-12" y="-14" width="404" height="388" rx="26" fill="#020617" fill-opacity="0.34" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="8" y="4" fill="#67e8f9" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="11.5" font-weight="700" letter-spacing="3">RUNTIME TOPOLOGY</text>
+    <text x="8" y="27" fill="#64748b" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="11.5" font-weight="500" letter-spacing="1.1">MODULAR MONOLITH · EVENT-DRIVEN EDGE</text>
+
+    <g class="float-a" filter="url(#layerShadow)">
+      <polygon points="12,74 30,62 356,62 338,74" fill="url(#layerCyanTop)"/>
+      <rect x="12" y="74" width="326" height="46" rx="9" fill="url(#layerCyanFront)"/>
+      <polygon points="338,74 356,62 356,108 338,120" fill="#083344"/>
+      <rect x="26" y="88" width="16" height="16" rx="5" fill="#67e8f9"/>
+      <text x="54" y="103" fill="#ecfeff" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="15.5" font-weight="700">React 19</text>
+      <text x="273" y="103" fill="#a5f3fc" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">WEB</text>
+    </g>
+
+    <g class="float-b" filter="url(#layerShadow)">
+      <polygon points="20,136 38,124 364,124 346,136" fill="url(#layerGreenTop)"/>
+      <rect x="20" y="136" width="326" height="46" rx="9" fill="url(#layerGreenFront)"/>
+      <polygon points="346,136 364,124 364,170 346,182" fill="#022c22"/>
+      <rect x="34" y="150" width="16" height="16" rx="5" fill="#6ee7b7"/>
+      <text x="62" y="165" fill="#ecfdf5" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="15.5" font-weight="700">Spring Boot 4</text>
+      <text x="273" y="165" fill="#a7f3d0" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">API</text>
+    </g>
+
+    <g class="float-c" filter="url(#layerShadow)">
+      <polygon points="28,198 46,186 372,186 354,198" fill="url(#layerBlueTop)"/>
+      <rect x="28" y="198" width="326" height="46" rx="9" fill="url(#layerBlueFront)"/>
+      <polygon points="354,198 372,186 372,232 354,244" fill="#172554"/>
+      <rect x="42" y="212" width="16" height="16" rx="5" fill="#93c5fd"/>
+      <text x="70" y="227" fill="#eff6ff" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="15.5" font-weight="700">PostgreSQL 17</text>
+      <text x="273" y="227" fill="#bfdbfe" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">STATE</text>
+    </g>
+
+    <g class="float-d" filter="url(#layerShadow)">
+      <polygon points="36,260 54,248 380,248 362,260" fill="url(#layerOrangeTop)"/>
+      <rect x="36" y="260" width="326" height="46" rx="9" fill="url(#layerOrangeFront)"/>
+      <polygon points="362,260 380,248 380,294 362,306" fill="#431407"/>
+      <rect x="50" y="274" width="16" height="16" rx="5" fill="#fdba74"/>
+      <text x="78" y="289" fill="#fff7ed" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="15.5" font-weight="700">RabbitMQ</text>
+      <text x="273" y="289" fill="#fed7aa" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">EVENTS</text>
+    </g>
+
+    <g class="float-e" filter="url(#layerShadow)">
+      <polygon points="44,322 62,310 388,310 370,322" fill="url(#layerRedTop)"/>
+      <rect x="44" y="322" width="326" height="46" rx="9" fill="url(#layerRedFront)"/>
+      <polygon points="370,322 388,310 388,356 370,368" fill="#4c0519"/>
+      <rect x="58" y="336" width="16" height="16" rx="5" fill="#fda4af"/>
+      <text x="86" y="351" fill="#fff1f2" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="15.5" font-weight="700">Redis</text>
+      <text x="273" y="351" fill="#fecdd3" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.2">SESSIONS</text>
+    </g>
+
+    <path d="M6 96V326" stroke="#22d3ee" stroke-opacity="0.45" stroke-width="1.4" class="flow-line"/>
+    <circle cx="6" cy="96" r="4" fill="#22d3ee" class="pulse-soft"/>
+    <circle cx="6" cy="326" r="4" fill="#34d399" class="pulse-slow"/>
+  </g>
+
+  <g transform="translate(1156 54)">
+    <g class="float-b" filter="url(#heroShadow)">
+      <polygon points="0,18 22,6 44,18 22,30" fill="#a5f3fc"/>
+      <polygon points="0,18 22,30 22,56 0,44" fill="#0e7490"/>
+      <polygon points="44,18 22,30 22,56 44,44" fill="#155e75"/>
+      <text x="12" y="44" fill="#ecfeff" font-family="'Segoe UI', 'Inter', system-ui, sans-serif" font-size="11" font-weight="800">3D</text>
+    </g>
+  </g>
+
+  <g transform="translate(690 392)">
+    <g class="float-c" filter="url(#heroShadow)">
+      <polygon points="0,10 13,3 26,10 13,17" fill="#c4b5fd"/>
+      <polygon points="0,10 13,17 13,32 0,25" fill="#6d28d9"/>
+      <polygon points="26,10 13,17 13,32 26,25" fill="#5b21b6"/>
+    </g>
+  </g>
+
+  <g class="pulse-soft">
+    <circle cx="640" cy="386" r="5" fill="#67e8f9"/>
+    <circle cx="640" cy="386" r="14" fill="none" stroke="#67e8f9" stroke-opacity="0.28"/>
+  </g>
+</svg>
