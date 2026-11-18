@@ -15,7 +15,7 @@
 - Capability-based, dated official pricing comparison and reproducible estimate worksheet: `docs/08-finops/MULTI_CLOUD_COST_COMPARISON.md`.
 - Source/CI-based security review and remaining threat validation: `docs/05-security/FINAL_SECURITY_REVIEW.md`.
 - Evidence snapshot with PASS and NOT VERIFIED statuses: `docs/09-testing/FINAL_VALIDATION_MATRIX.md`.
-- Playwright shopper and checkout browser journeys: `apps/web/e2e/shopper.spec.ts`; local run passed 2/2 against the Compose API and synthetic stock. The pinned Chromium download did not complete; a locally cached Chromium 1248 binary was selected through an explicit executable-path environment override. `infrastructure/scripts/Seed-E2E-Catalog.ps1` was added as a local-only fixture helper and passed PowerShell parsing, but its database execution was not verified because Docker Desktop returned an API 500 during the later rerun. The successful E2E used the equivalent synthetic product/stock inserted directly into the local database.
+- Playwright shopper and checkout browser journeys: two happy paths passed locally (2/2) against the Compose API and synthetic stock, using cached Chromium 1248 via an explicit executable-path override because the pinned browser download did not complete. Added a repeatable SQL fixture, local PowerShell wrapper, insufficient-stock failure test, and hosted Compose-backed E2E job. PowerShell parsing and three-test discovery pass; the new failure case and hosted job remain NOT VERIFIED. The latest local full run could not reach the API after Docker Desktop returned an API 500. The earlier successful E2E used equivalent synthetic product/stock inserted directly into the local database.
 
 ## Evidence and limitations
 
@@ -36,7 +36,7 @@
 | Multi-cloud mapping and semantic differences | DOCUMENTED; provider adapters and tests NOT IMPLEMENTED |
 | Sourced reproducible provider cost comparison | Method, source links and worksheet documented; monthly totals NOT ESTIMATED because region/workload inputs and calculator exports are absent |
 | Security review | CI scans and production dependency audit PASS on run `44245526649` at `e47724a`; unpatched high severity dev-toolchain advisory remains OPEN; DAST NOT RUN |
-| E2E journeys | Shopper and simulated checkout success journeys PASS locally (2/2); failure journeys and hosted browser run NOT RUN |
+| E2E journeys | Shopper and simulated checkout success journeys PASS locally (2/2); insufficient-stock case and hosted E2E job added but NOT VERIFIED |
 | Recovery drill evidence | Populated synthetic catalog/inventory restore PASS; order/payment restore, dependency failure drills and RTO/RPO remain pending |
 | Final documentation matches implementation | PARTIAL; E2E failure journeys, order/payment recovery, measured recovery targets, DAST, and final project handoff remain |
 | CI on current implementation SHA | PASS, run `44245526649` at `e47724a`; phase closure is still pending remaining acceptance items |

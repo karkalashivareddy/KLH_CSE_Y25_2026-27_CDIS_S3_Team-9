@@ -86,6 +86,8 @@ The calculators are the authoritative starting points for region- and configurat
 ## Current conclusion and limitations
 
 - AWS is the project's primary target architecture; Azure and Google Cloud are comparison targets, not implemented deployment environments.
+- The following are concrete blockers to a defensible quote, rather than missing calculator work: no provider regions/currency are approved; no AWS/Azure/GCP account, service deployment, or selected SKU exists; no recurring request/message/egress/log-volume workload is measured; no cloud-sized database/cache/broker capacity or retention is measured; and no HA/RTO/RPO choice is approved. The local checkout E2E and synthetic PostgreSQL recovery fixture validate behavior, but do not provide monthly utilization or storage-growth inputs.
+- Until those values are approved, the open rows in the scenario worksheet must stay `OPEN` and the monthly totals must stay `NOT ESTIMATED`. Choosing illustrative defaults can be useful for planning, but would produce an assumption-only scenario and must not be presented as an estimate for this project.
 - The documented Phase 7 local catalog load test is not a representative cloud capacity or pricing baseline. Do not extrapolate it into request volume, database sizing, or monthly compute hours.
 - A provider ranking, monthly cost, cost saving percentage, or break-even point is **NOT ESTIMATED** until the worksheet is approved and calculator exports are attached.
 - Calculators estimate provider charges from entered configuration and usage; actual bills can differ due to actual consumption, negotiated terms, exchange rates, and taxes. Re-run estimates immediately before deployment decisions.

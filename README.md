@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** Hosted CI passed at `e47724aa1aca6319bdb347c689e57c7472b45cd5` (run `44245526649`). Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper and simulated-checkout success journeys pass locally (2/2). Order/payment restore, dependency failure drills, measured RTO/RPO, failure-path E2E, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
+> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** Hosted CI passed at `e47724aa1aca6319bdb347c689e57c7472b45cd5` (run `44245526649`). Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper and simulated-checkout success journeys pass locally (2/2). A stock-failure browser case and hosted E2E job are added but await verification. Order/payment restore, dependency failure drills, measured RTO/RPO, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
@@ -27,7 +27,7 @@ CloudResilience is intended to demonstrate product foundations and cloud enginee
 | Observability | Phase 7 local profile implemented: Prometheus, Grafana, Loki, Tempo, OpenTelemetry Collector and Alloy; metrics scrape and traces verified locally, and a bounded catalog load test completed |
 | AWS infrastructure | Phase 8 Terraform source validated locally and by hosted CI; no AWS resources provisioned |
 | Disaster recovery | Empty-state and synthetic catalog/inventory backup/checksum/isolated-restore drills passed; order/payment recovery and RTO/RPO remain unverified |
-| E2E test setup | Local Playwright registration/catalog/cart/checkout success journeys passed 2/2 with synthetic stock; failure journeys and hosted E2E remain unverified. Fixture seed script is present but its database execution is not yet verified. |
+| E2E test setup | Local Playwright registration/catalog/cart/checkout success journeys passed 2/2 with synthetic stock; stock-failure test and hosted E2E job added but not yet verified. Docker API failure blocked local fixture script execution. |
 | Simulated payments | Deterministic simulator only; no real provider, payment data, or charges |
 | Order and event runtime verification | Phase 6 regression suite passed 64 tests; Phase 7 full backend suite passed 66 tests, 0 skipped |
 | AWS/Azure/GCP provisioning | Not started; no resources authorized or deployed |

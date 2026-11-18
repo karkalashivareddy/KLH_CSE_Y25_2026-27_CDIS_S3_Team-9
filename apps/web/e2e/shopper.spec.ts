@@ -48,3 +48,20 @@ test('customer can add a seeded product and complete simulated checkout', async 
   await expect(page.getByRole('heading', { name: 'Order details' })).toBeVisible()
   await expect(page.getByText('Payment succeeded', { exact: true })).toBeVisible()
 })
+
+test('checkout rejects a cart quantity that exceeds currently available stock', async ({ page }) => {
+  test.skip(process.env.E2E_CHECKOUT !== '1', 'Set E2E_CHECKOUT=1 only in a disposable local Compose environment with an active, stocked product.')
+
+  await registerAndSignIn(page)
+  await page.goto('/catalog')
+  await page.getByRole('button', { name: 'Add to cart' }).first().click()
+  await page.getByRole('link', { name: /Cart/ }).click()
+  const quantity = page.getByRole('spinbutton', { name: /Quantity for/ })
+  await quantity.fill('999')
+  await expect(page.getByText(/only \d+ currently available/)).toBeVisible()
+  await page.getByRole('link', { name: 'Continue to checkout' }).click()
+  await page.getByRole('button', { name: /Place order/ }).click()
+  await expect(page.getByRole('alert')).toContainText('Insufficient available inventory')
+  await expect(page.getByRole('alert')).toContainText('Your cart has not been ordered.')
+  await expect(page).toHaveURL(/\/checkout$/)
+})
