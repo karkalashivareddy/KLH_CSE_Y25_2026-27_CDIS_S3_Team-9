@@ -1,6 +1,6 @@
 # CloudResilience engineering handoff
 
-**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Hosted run `44309215656` on `977abdf68d116c62c156d262be9f49e0552a5ce6` passed all six CI jobs, including the three browser journeys, the PostgreSQL order/payment restore, all five asserted web security headers and the OWASP ZAP passive baseline (0 FAIL, 62 PASS, 6 WARN). The ZAP HTML/JSON reports were not retained because the container user could not write to the mounted directory; the workflow now makes that directory writable. Remaining open gates are listed below; no cloud deployment or production certification is claimed.
+**Status: NOT COMPLETE.** This report records delivered capabilities and remaining release gates without treating design work as proof. Hosted run `44310943106` on `416564d54daa726de4a29663639ba1b6ad95d277` passed all six CI jobs, including the three browser journeys, the PostgreSQL order/payment restore, all five asserted web security headers and the OWASP ZAP passive baseline (0 FAIL, 62 PASS, 6 WARN in the console summary; the JSON report lists 8 alert types, none High). The ZAP HTML/JSON/YAML reports are now retained as artifact `zap-baseline-44310943106`. Remaining open gates are listed below; no cloud deployment or production certification is claimed.
 
 ## Objectives and architecture
 
@@ -17,7 +17,7 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 | 7 | Implemented locally | Observability stack, dashboards, alerts and a catalog-only load test; no cloud-scale capacity claim. |
 | 8 | Terraform implemented and validated | Hosted validation includes fmt, backend-free init, validate, TFLint and Checkov. No apply or cloud deployment. |
 | 9 | Partial | Hosted run `44265982978` passed restoration of 1 order, 1 item, 1 payment, 1 reservation and event/inbox state into a fresh isolated DB; 5 Flyway migrations and API smoke passed; reported integrity mismatches were zero. Archive SHA-256 and counts are in the DR report. Procedure duration was 11 seconds, not RTO; RPO remains unmeasured. Redis loss, RabbitMQ outage/replay and cloud failover are not run. |
-| 10 | Partial | Hosted run `44309215656` (`977abdf`) passed all six jobs: 3 browser journeys, order/payment restore, direct web-image build/start, all five security headers and the ZAP passive baseline. ZAP logged 0 FAIL, 62 PASS and 6 WARN; its HTML/JSON reports were not uploaded because the container user could not write to `/zap/wrk`, so the workflow now makes that mount writable. Cost totals remain not estimated; no approved region/workload inputs. |
+| 10 | Partial | Hosted run `44310943106` (`416564d`) passed all six jobs: 3 browser journeys, order/payment restore, direct web-image build/start, all five security headers and the ZAP passive baseline. ZAP logged 0 FAIL, 62 PASS and 6 WARN, and its HTML/JSON/YAML reports are retained as artifact `zap-baseline-44310943106`. Cost totals remain not estimated; no approved region/workload inputs. |
 
 ## Delivered engineering decisions
 
@@ -37,9 +37,10 @@ The GitHub repository has a descriptive project summary and technology/cloud eng
 - Hosted run `44265982978` (`05295f2`): E2E, order/payment restore, direct web-image build/start, and all non-browser jobs passed. The response-header assertion failed, so ZAP was skipped. Its recovery artifact was downloaded and inspected; exact evidence is in `docs/07-disaster-recovery/DR_DRILL_RESULTS.md`.
 - Hosted run `44278969578` (`3a92fed`) saved a response diagnostic showing the web container had exited when `docker exec` ran. The follow-up explicitly runs Nginx in foreground and captures `docker inspect`/container logs before the header probe.
 - Hosted run `44282141760` (`fdf151e`) captured Nginx's exact error: `open() "/tmp/nginx/nginx.pid" failed (13: Permission denied)`. The fix sets the PID path to `/var/cache/nginx/nginx.pid` and removes the root-owned PID file created by the build-time `nginx -t`. A local image build then started Nginx and returned the asserted CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy headers; run `44309215656` confirmed this on the hosted runner.
-- Hosted run `44309215656` on `977abdf68d116c62c156d262be9f49e0552a5ce6`: **all six jobs passed**. Browser journeys **3/3**, order/payment restore and API smoke passed, and the response-header probe returned CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy (artifact `web-response-headers-44309215656`). ZAP passive baseline completed with **0 FAIL, 62 PASS, 6 WARN**. The ZAP report step logged `AccessDeniedException /zap/wrk/zap-baseline.html`, so the artifact contained no report; the workflow now makes the mounted results directory writable before the scan.
+- Hosted run `44309215656` on `977abdf68d116c62c156d262be9f49e0552a5ce6`: **all six jobs passed**. Browser journeys **3/3**, order/payment restore and API smoke passed, and the response-header probe returned CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options and Permissions-Policy (artifact `web-response-headers-44309215656`). ZAP passive baseline completed with **0 FAIL, 62 PASS, 6 WARN**. The ZAP report step logged `AccessDeniedException /zap/wrk/zap-baseline.html`, so that artifact contained no report; the workflow now makes the mounted results directory writable before the scan.
+- Hosted run `44310943106` on `416564d54daa726de4a29663639ba1b6ad95d277`: **all six jobs passed again** after the permissions change. Browser journeys 3/3, order/payment restore and API smoke passed, header probe passed, and ZAP re-ran with 0 FAIL, 62 PASS, 6 WARN. The reports uploaded successfully: artifact `zap-baseline-44310943106` contains `zap-baseline.html`, `zap-baseline.json` and `zap.yaml` (21,260 bytes zipped).
 - A high-severity development-toolchain advisory, GHSA-fc5q-39xc-vjpf (picomatch), remains open. Production dependency audit passing does not resolve this advisory.
-- ZAP baseline is passive scanning evidence only; it is not a penetration test or a clean bill of health. Run `44309215656` recorded **6 warnings** (suspicious comments, Server version disclosure, storable/cacheable content, CSP wildcard directives, modern web application fingerprinting, missing Cross-Origin-Embedder-Policy) alongside 62 passing checks and 0 failures. No external penetration test or formal audit was performed.
+- ZAP baseline is passive scanning evidence only; it is not a penetration test or a clean bill of health. The retained `44310943106` JSON names 8 alert types: 1 Medium (CSP wildcard directive), 4 Low (missing/invalid COEP, COOP and CORP; Server version disclosure) and 3 Informational (suspicious comments, modern web application, storable/cacheable content). The console summary recorded 62 PASS and 0 FAIL. No High-severity alert was reported, but no external penetration test or formal audit was performed.
 
 ## Recovery and cloud evidence
 
@@ -49,11 +50,10 @@ No AWS/Azure/GCP resources, database, DNS changes, production deployment, cross-
 
 ## Current handoff and next gates
 
-1. Re-run main CI after the ZAP report-permission fix and confirm the HTML/JSON report artifacts upload. No other release-gate step is currently failing.
-2. Review the uploaded ZAP report and record counts/checksums without presenting the CI exercise as cloud RTO/RPO.
-3. Resolve or formally track the high-severity picomatch advisory; do not suppress it.
-4. Obtain region, currency, workload, SKU, HA, backup-retention and recovery-target assumptions before publishing cost totals.
-5. If later authorized, run cloud deployment and recovery only under a separate explicit deployment approval; nothing in this work provisioned resources.
+1. Review the retained ZAP report (`zap-baseline-44310943106`) and decide whether to remediate or formally track the 1 Medium CSP wildcard finding and the missing cross-origin headers; the baseline is evidence, not a clean audit.
+2. Resolve or formally track the high-severity picomatch advisory; do not suppress it.
+3. Obtain region, currency, workload, SKU, HA, backup-retention and recovery-target assumptions before publishing cost totals.
+4. If later authorized, run cloud deployment and recovery only under a separate explicit deployment approval; nothing in this work provisioned resources.
 
 ## Documentation index
 
