@@ -46,6 +46,7 @@ No measured RTO, RPO, or data-loss window is available. A local empty-state arch
 | Archive | Custom format, 71,332 bytes; JSON metadata names source DB and PostgreSQL version |
 | Restore target | New isolated database `recovery_drill_20261118_05` |
 | Restore result | PASS; checksum verified and restore completed |
+| Application smoke test | PASS; temporary API container against the restored DB returned readiness HTTP 200/UP and `/api/v1/products` HTTP 200 with the recovered synthetic product and available quantity 15 |
 | Recovered counts | 5 successful Flyway migrations; 1 product; 1 inventory row; 2 inventory movements; 1 reserved row |
 | Reconciliation | 0 inventory invariant violations; 0 inventory ledger mismatches; 0 missing order payments; outbox backlog 0; quarantined DLQ 0 |
 | Recovery timing | NOT MEASURED as RTO/RPO; this is a fixture restore without injected outage |

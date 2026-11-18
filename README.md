@@ -4,7 +4,7 @@
 
 Course project for Cloud Infrastructure and Services (25CS2206E), Trimester 5, Team 9, academic year 2026–2027.
 
-> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** Hosted CI passed at `20329ba75f2b5e60bfb0847f0221d73d226805ff`. Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper and simulated-checkout success journeys pass locally (2/2). Order/payment restore, dependency failure drills, measured RTO/RPO, failure-path E2E, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
+> **Status: Phases 6–8 are integrated on `main`; Phases 9–10 remain in progress.** Hosted CI passed at `e47724aa1aca6319bdb347c689e57c7472b45cd5` (run `44245526649`). Local empty-state and synthetic catalog/inventory PostgreSQL restore drills passed; Playwright shopper and simulated-checkout success journeys pass locally (2/2). Order/payment restore, dependency failure drills, measured RTO/RPO, failure-path E2E, DAST and final security validation remain open. No cloud deployment or production operation is claimed.
 
 ## Product and target architecture
 
